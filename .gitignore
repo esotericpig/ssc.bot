@@ -1,0 +1,14 @@
+/.bundle/
+/.yardoc/
+/doc/
+/pkg/
+/spec/reports/
+/stock/
+/temp/
+/tmp/
+
+*.gem
+*.rbc
+
+.env
+Gemfile.lock
