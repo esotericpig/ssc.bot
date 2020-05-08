@@ -12,10 +12,10 @@ It's currently in development and only offers limited functionality.
 
 ## Contents
 
-- [License](#-license)
 - [Setup](#-setup)
 - [Using](#-using)
 - [Hacking](#-hacking)
+- [License](#-license)
 
 ## [//](#contents) Setup
 
