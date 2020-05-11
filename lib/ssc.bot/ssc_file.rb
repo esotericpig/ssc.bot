@@ -25,12 +25,11 @@ require 'ssc.bot/util'
 
 
 module SSCBot
-class ChatLog
   ###
   # @author Jonathan Bradley Whited (@esotericpig)
   # @since  0.1.0
   ###
-  class File < ::File
+  class SSCFile < ::File
     DEFAULT_BUFFER_LEN = 520
     DEFAULT_ENCODING = 'Windows-1252:UTF-8'
     DEFAULT_MODE = 'rt'
@@ -114,5 +113,4 @@ class ChatLog
       end
     end
   end
-end
 end
