@@ -57,11 +57,11 @@ class ChatLog
     
     # @param line [String] the raw (unparsed) line from the file
     # @param type [Symbol] what type of message this is; must be one of {TYPES}
-    def initialize(line,type: :unknown)
+    def initialize(line,type:)
       type = type.to_sym()
       
       raise ArgumentError,"invalid line{#{line}}" if line.nil?()
-      raise ArgumentError,"invalid type{#{type}}" if !valid_type?(type)
+      raise ArgumentError,"invalid type{#{type}}" if !self.class.valid_type?(type)
       
       @line = line
       @type = type
