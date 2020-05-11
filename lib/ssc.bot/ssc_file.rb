@@ -33,7 +33,7 @@ module SSCBot
     DEFAULT_BUFFER_LEN = 520
     DEFAULT_ENCODING = 'Windows-1252:UTF-8'
     DEFAULT_MODE = 'rt'
-    DEFAULT_SEPARATOR = /\r?\n|\r/ # Could use +/\R/+ for Ruby v2.0+
+    DEFAULT_SEPARATOR = /\r?\n|\r/ # Instead, could use +/\R/+ for Ruby v2.0+
     
     def initialize(filename,mode=DEFAULT_MODE,buffer_len: DEFAULT_BUFFER_LEN,encoding: DEFAULT_ENCODING,separator: DEFAULT_SEPARATOR,**opt)
       super(filename,mode,encoding: encoding,**opt)
