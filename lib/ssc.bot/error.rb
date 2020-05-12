@@ -27,4 +27,6 @@ module SSCBot
   # @since  0.1.0
   ###
   class Error < ::StandardError; end
+  
+  class ParseError < Error; end
 end
