@@ -46,6 +46,24 @@ class ChatLog
       @strict = strict
     end
     
+    def match_player(line,name_prefix: %r{},name_suffix: %r{\>\s},type: %r{..},use_namelen: true)
+      if use_namelen && !@namelen.nil?()
+        match = line.match(/
+          \A#{type.source}
+          #{name_prefix.source}(?<name>.{#{@namelen}})#{name_suffix.source}
+          (?<message>.*)\z
+        /x)
+      else
+        match = line.match(/
+          \A#{type}
+          #{name_prefix.source}(?<name>.*?\S)#{name_suffix.source}
+          (?<message>.*)\z
+        /x)
+      end
+      
+      return match
+    end
+    
     def parse(line)
       if line.nil?()
         if @strict
@@ -64,16 +82,16 @@ class ChatLog
         when 'E'
           message = parse_freq(line)
         when 'P'
-          if remote?(line)
-            message = parse_remote(line)
+          if (match = remote?(line))
+            message = parse_remote(line,match: match)
           else
             message = parse_private(line)
           end
         when 'T'
           message = parse_team(line)
         else
-          if pub?(line)
-            message = parse_pub(line)
+          if (match = pub?(line))
+            message = parse_pub(line,match: match)
           else
             case line
             # '  Name(100) killed by: Name'
@@ -98,34 +116,24 @@ class ChatLog
     #   # NOT affected by namelen.
     #   'C 1:Name> Message'
     def parse_chat(line)
-      player = parse_player(line,type: :chat)
+      match = match_player(line,name_prefix: %r{(?<channel>\d+)\:})
+      player = parse_player(line,type: :chat,match: match)
       
       return nil if player.nil?()
       
-      channel = line.match(/\AC (\d+)\:/)
-      name_i = player.name.match(/\A\d+\:/)
+      channel = match[:channel]
       
-      if channel.nil?() || name_i.nil?()
+      if channel.nil?()
         if @strict
-          raise ParseError,"no chat channel for chat message{#{line}}"
+          raise ParseError,"invalid chat channel for chat message{#{line}}"
         else
           return nil
         end
       end
       
-      channel = channel[1].to_i()
-      name_i = name_i[0].length
-      name = player.name[name_i..-1]
+      channel = channel.to_i()
       
-      if name.nil?() || name.empty?()
-        if @strict
-          raise ParseError,"no player name for chat message{#{line}}"
-        else
-          return nil
-        end
-      end
-      
-      return ChatMessage.new(line,channel: channel,name: name,message: player.message)
+      return ChatMessage.new(line,channel: channel,name: player.name,message: player.message)
     end
     
     # @example Format
@@ -140,47 +148,27 @@ class ChatLog
     
     # @example Format
     #   'X Name> Message'
-    def parse_player(line,type:)
-      # 2+ for 'X '; MAX+2 for '> '.
-      message_i = 2 + (@namelen.nil?() ? (MAX_NAMELEN + 2) : @namelen)
-      name = line[2...message_i]
+    def parse_player(line,type:,match: nil)
+      match = match_player(line) if match.nil?()
       
-      if name.nil?() || name.empty?()
+      if match.nil?()
         if @strict
-          raise ParseError,"no player name for #{type} message{#{line}}"
+          raise ParseError,"invalid #{type} message{#{line}}"
         else
           return nil
         end
       end
       
-      if @namelen.nil?()
-        # index() instead of rindex() in case of 'X Name> QuotedName> QuotedMessage'.
-        message_i = name.index('> ')
-        
-        # 0 = '> Message' (no name).
-        if message_i.nil?() || message_i == 0
-          if @strict
-            raise ParseError,"no player name for #{type} message{#{line}}"
-          else
-            return nil
-          end
-        end
-        
-        name = name[0...message_i]
-        message_i += 2 # For 'X '
-      end
+      name = Util.u_lstrip(match[:name])
+      message = match[:message]
       
-      name = Util.u_lstrip(name)
-      
-      if name.empty?()
+      if name.nil?() || name.empty?() || name.length > MAX_NAMELEN
         if @strict
-          raise ParseError,"blank player name for #{type} message{#{line}}"
+          raise ParseError,"invalid player name for #{type} message{#{line}}"
         else
           return nil
         end
       end
-      
-      message = line[message_i + 2..-1] # +2 for '> '
       
       if message.nil?()
         if @strict
@@ -190,7 +178,7 @@ class ChatLog
         end
       end
       
-      return PlayerMessage.new(line,type: type,name: name,message: message)
+      return PlayerMessage.new(line,type: :unknown,name: name,message: message)
     end
     
     # @example Format
@@ -205,8 +193,8 @@ class ChatLog
     
     # @example Format
     #   '  Name> Message'
-    def parse_pub(line)
-      player = parse_player(line,type: :pub)
+    def parse_pub(line,match: nil)
+      player = parse_player(line,type: :pub,match: match)
       
       return nil if player.nil?()
       
@@ -217,47 +205,14 @@ class ChatLog
     #   # NOT affected by namelen.
     #   'P :SelfName:Message'
     #   'P (Name)>Message'
-    def parse_remote(line)
-      # 5+ for 'P ' and (':...:' or '(...)>').
-      message_i = 5 + MAX_NAMELEN
-      name = line[2...message_i]
+    def parse_remote(line,match:)
+      player = parse_player(line,type: 'remote private',match: match)
       
-      if name.nil?() || name.empty?()
-        if @strict
-          raise ParseError,"no player name for remote private message{#{line}}"
-        else
-          return nil
-        end
-      end
+      return nil if player.nil?()
       
-      own = (name[0] == ':')
-      name = name[1..-1] # '' if length == 1
+      own = (line[2] == ':')
       
-      # index() instead of rindex() in case of 'P (Name)>(QuotedName)>QuotedMessage'.
-      message_i = name.index(own ? ':' : ')>')
-      
-      # 0 = (':: Message' or '()> Message') (no name).
-      if message_i.nil?() || message_i == 0
-        if @strict
-          raise ParseError,"no player name for remote private message{#{line}}"
-        else
-          return nil
-        end
-      end
-      
-      name = name[0...message_i]
-      message_i += (own ? 1 : 2) # +1 for ':' or +2 for ')>'
-      message = [message_i..-1]
-      
-      if message.nil?()
-        if @strict
-          raise ParseError,"invalid player message for remote private message{#{line}}"
-        else
-          return nil
-        end
-      end
-      
-      return RemoteMessage.new(line,own: own,name: name,message: message)
+      return RemoteMessage.new(line,own: own,name: player.name,message: player.message)
     end
     
     # @example Format
@@ -273,13 +228,17 @@ class ChatLog
     # @example Format
     #   '  Name> Message'
     def pub?(line)
-      return false if line !~ /\A  .*[[:alnum:]]+\> /
+      match = match_player(line,type: %r{\s\s})
       
-      # 4+ for leading spaces '  ' and '> '.
-      message_i = 4 + (@namelen.nil?() ? MAX_NAMELEN : @namelen)
-      name = line[2...message_i]
+      if !match.nil?()
+        name = Util.u_lstrip(match[:name])
+        
+        if name.nil?() || name.empty?() || name.length > MAX_NAMELEN || match[:message].nil?()
+          return false
+        end
+      end
       
-      return !name.nil?() && name =~ /\A.*[[:alnum:]]+\> /
+      return match
     end
     
     # @example Format
@@ -287,14 +246,13 @@ class ChatLog
     #   'P :SelfName:Message'
     #   'P (Name)>Message'
     def remote?(line)
-      # 5+ for 'P ' and (':...:' or '(...)>').
-      message_i = 5 + MAX_NAMELEN
-      name = line[2...message_i]
+      match = match_player(line,name_prefix: %r{\:},name_suffix: %r{\:},use_namelen: false)
       
-      return !name.nil?() && (
-        name =~ /\A\:([[:alnum:]]+|[[:alnum:]]+.*[[:alnum:]]+)\:/ ||
-        name =~ /\A\(([[:alnum:]]+|[[:alnum:]]+.*[[:alnum:]]+)\)\>/
-      )
+      if match.nil?()
+        match = match_player(line,name_prefix: %r{\(},name_suffix: %r{\)\>},use_namelen: false)
+      end
+      
+      return match
     end
   end
 end
