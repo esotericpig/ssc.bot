@@ -55,7 +55,7 @@ class ChatLog
         /x)
       else
         match = line.match(/
-          \A#{type}
+          \A#{type.source}
           #{name_prefix.source}(?<name>.*?\S)#{name_suffix.source}
           (?<message>.*)\z
         /x)
