@@ -39,29 +39,58 @@ class ChatLog
     MAX_NAMELEN = 24
     
     attr_accessor :namelen
+    attr_reader :regex_cache
     attr_accessor? :strict
     
     def initialize(namelen: nil,strict: true)
       @namelen = namelen
+      @regex_cache = {}
       @strict = strict
     end
     
-    def match_player(line,name_prefix: %r{},name_suffix: %r{\>\s},type: %r{..},use_namelen: true)
-      if use_namelen && !@namelen.nil?()
-        match = line.match(/
-          \A#{type.source}
-          #{name_prefix.source}(?<name>.{#{@namelen}})#{name_suffix.source}
-          (?<message>.*)\z
-        /x)
-      else
-        match = line.match(/
-          \A#{type.source}
-          #{name_prefix.source}(?<name>.*?\S)#{name_suffix.source}
-          (?<message>.*)\z
-        /x)
+    # The interpreter should cache the args' default values,
+    # so no reason to manually cache them unless a variable is involved inside.
+    # 
+    # Do not pass spaces +' '+ into the args, must use +\s+ instead.
+    def match_player(line,type:,name_prefix: %r{},name_suffix: %r{\>\s},type_prefix: %r{..},use_namelen: true)
+      cached_regex = @regex_cache[type]
+      
+      if cached_regex.nil?()
+        cached_regex = {}
+        @regex_cache[type] = cached_regex
       end
       
-      return match
+      if use_namelen && !@namelen.nil?()
+        regex = cached_regex[@namelen]
+        
+        if regex.nil?()
+          # Be careful to not use spaces ' ', but to use '\s' instead
+          # because of the '/x' option.
+          regex = /
+            \A#{type_prefix.source}
+            #{name_prefix.source}(?<name>.{#{@namelen}})#{name_suffix.source}
+            (?<message>.*)\z
+          /x
+          
+          cached_regex[@namelen] = regex
+        end
+      else
+        regex = cached_regex[:no_namelen]
+        
+        if regex.nil?()
+          # Be careful to not use spaces ' ', but to use '\s' instead
+          # because of the '/x' option.
+          regex = /
+            \A#{type_prefix.source}
+            #{name_prefix.source}(?<name>.*?\S)#{name_suffix.source}
+            (?<message>.*)\z
+          /x
+          
+          cached_regex[:no_namelen] = regex
+        end
+      end
+      
+      return line.match(regex)
     end
     
     def parse(line)
@@ -116,8 +145,8 @@ class ChatLog
     #   # NOT affected by namelen.
     #   'C 1:Name> Message'
     def parse_chat(line)
-      match = match_player(line,name_prefix: %r{(?<channel>\d+)\:})
-      player = parse_player(line,type: :chat,match: match)
+      match = match_player(line,type: :chat,name_prefix: %r{(?<channel>\d+)\:},use_namelen: false)
+      player = parse_player(line,type_name: :chat,match: match)
       
       return nil if player.nil?()
       
@@ -139,7 +168,7 @@ class ChatLog
     # @example Format
     #   'E Name> Message'
     def parse_freq(line)
-      player = parse_player(line,type: :freq)
+      player = parse_player(line,type_name: :freq)
       
       return nil if player.nil?()
       
@@ -148,12 +177,12 @@ class ChatLog
     
     # @example Format
     #   'X Name> Message'
-    def parse_player(line,type:,match: nil)
-      match = match_player(line) if match.nil?()
+    def parse_player(line,type_name:,match: nil)
+      match = match_player(line,type: :player) if match.nil?()
       
       if match.nil?()
         if @strict
-          raise ParseError,"invalid #{type} message{#{line}}"
+          raise ParseError,"invalid #{type_name} message{#{line}}"
         else
           return nil
         end
@@ -164,7 +193,7 @@ class ChatLog
       
       if name.nil?() || name.empty?() || name.length > MAX_NAMELEN
         if @strict
-          raise ParseError,"invalid player name for #{type} message{#{line}}"
+          raise ParseError,"invalid player name for #{type_name} message{#{line}}"
         else
           return nil
         end
@@ -172,7 +201,7 @@ class ChatLog
       
       if message.nil?()
         if @strict
-          raise ParseError,"invalid player message for #{type} message{#{line}}"
+          raise ParseError,"invalid player message for #{type_name} message{#{line}}"
         else
           return nil
         end
@@ -184,7 +213,7 @@ class ChatLog
     # @example Format
     #   'P Name> Message'
     def parse_private(line)
-      player = parse_player(line,type: :private)
+      player = parse_player(line,type_name: :private)
       
       return nil if player.nil?()
       
@@ -194,7 +223,7 @@ class ChatLog
     # @example Format
     #   '  Name> Message'
     def parse_pub(line,match: nil)
-      player = parse_player(line,type: :pub,match: match)
+      player = parse_player(line,type_name: :pub,match: match)
       
       return nil if player.nil?()
       
@@ -206,7 +235,7 @@ class ChatLog
     #   'P :SelfName:Message'
     #   'P (Name)>Message'
     def parse_remote(line,match:)
-      player = parse_player(line,type: 'remote private',match: match)
+      player = parse_player(line,type_name: 'remote private',match: match)
       
       return nil if player.nil?()
       
@@ -218,7 +247,7 @@ class ChatLog
     # @example Format
     #   'T Name> Message'
     def parse_team(line)
-      player = parse_player(line,type: :team)
+      player = parse_player(line,type_name: :team)
       
       return nil if player.nil?()
       
@@ -228,7 +257,7 @@ class ChatLog
     # @example Format
     #   '  Name> Message'
     def pub?(line)
-      match = match_player(line,type: %r{\s\s})
+      match = match_player(line,type: :pub,type_prefix: %r{\s\s})
       
       if !match.nil?()
         name = Util.u_lstrip(match[:name])
@@ -246,10 +275,10 @@ class ChatLog
     #   'P :SelfName:Message'
     #   'P (Name)>Message'
     def remote?(line)
-      match = match_player(line,name_prefix: %r{\:},name_suffix: %r{\:},use_namelen: false)
+      match = match_player(line,type: :remote,name_prefix: %r{\:},name_suffix: %r{\:},use_namelen: false)
       
       if match.nil?()
-        match = match_player(line,name_prefix: %r{\(},name_suffix: %r{\)\>},use_namelen: false)
+        match = match_player(line,type: :remote,name_prefix: %r{\(},name_suffix: %r{\)\>},use_namelen: false)
       end
       
       return match
