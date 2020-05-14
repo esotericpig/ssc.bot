@@ -110,7 +110,7 @@ class ChatLog
   # @author Jonathan Bradley Whited (@esotericpig)
   # @since  0.1.0
   ###
-  class QNamelen < Message
+  class QNamelenMessage < Message
     attr_reader :namelen
     
     def initialize(line,namelen:)

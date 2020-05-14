@@ -119,16 +119,14 @@ class ChatLog
         when 'T'
           message = parse_team(line)
         else
+          # Check this one first to prevent abuse from pubbers.
           if (match = pub?(line))
             message = parse_pub(line,match: match)
           else
-            case line
-            # '  Name(100) killed by: Name'
-            when /\A  .*?\S\(\d+\) killed by: .*?\S\z/
-              #message = parse_kill(line)
-            # '  Message Name Length: 24'
-            when /\A  Message Name Length: \d+\z/
-              #message = parse_q_namelen(line)
+            if (match = kill?(line))
+              message = parse_kill(line,match: match)
+            elsif (match = q_namelen?(line))
+              message = parse_q_namelen(line,match: match)
             end
           end
         end
@@ -173,6 +171,50 @@ class ChatLog
       return nil if player.nil?()
       
       return FreqMessage.new(line,name: player.name,message: player.message)
+    end
+    
+    # @example Format
+    #   '  Killed.Name(100) killed by: Killer.Name'
+    def parse_kill(line,match:)
+      if match.nil?()
+        if @strict
+          raise ParseError,"invalid kill message{#{line}}"
+        else
+          return nil
+        end
+      end
+      
+      killed = match[:killed]
+      bounty = match[:bounty]
+      killer = match[:killer]
+      
+      if killed.nil?()
+        if @strict
+          raise ParseError,"invalid killed name for kill message{#{line}}"
+        else
+          return nil
+        end
+      end
+      
+      if bounty.nil?()
+        if @strict
+          raise ParseError,"invalid bounty for kill message{#{line}}"
+        else
+          return nil
+        end
+      end
+      
+      if killer.nil?()
+        if @strict
+          raise ParseError,"invalid killer name for kill message{#{line}}"
+        else
+          return nil
+        end
+      end
+      
+      bounty = bounty.to_i()
+      
+      return KillMessage.new(line,killed: killed,bounty: bounty,killer: killer)
     end
     
     # @example Format
@@ -231,8 +273,33 @@ class ChatLog
     end
     
     # @example Format
+    #   '  Message Name Length: 24'
+    def parse_q_namelen(line,match:)
+      if match.nil?()
+        if @strict
+          raise ParseError,"invalid ?namelen message{#{line}}"
+        else
+          return nil
+        end
+      end
+      
+      namelen = match[:namelen]
+      namelen = namelen.to_i() # nil is 0
+      
+      if namelen < 1
+        if @strict
+          raise ParseError,"invalid namelen for ?namelen message{#{line}}"
+        else
+          return nil
+        end
+      end
+      
+      return QNamelenMessage.new(line,namelen: namelen)
+    end
+    
+    # @example Format
     #   # NOT affected by namelen.
-    #   'P :SelfName:Message'
+    #   'P :Self.Name:Message'
     #   'P (Name)>Message'
     def parse_remote(line,match:)
       player = parse_player(line,type_name: 'remote private',match: match)
@@ -255,6 +322,12 @@ class ChatLog
     end
     
     # @example Format
+    #   '  Killed.Name(100) killed by: Killer.Name'
+    def kill?(line)
+      return /\A  (?<killed>.*?\S)\((?<bounty>\d+)\) killed by: (?<killer>.*?\S)\z/.match(line)
+    end
+    
+    # @example Format
     #   '  Name> Message'
     def pub?(line)
       match = match_player(line,type_name: :pub,type_prefix: %r{\s\s})
@@ -271,8 +344,14 @@ class ChatLog
     end
     
     # @example Format
+    #   '  Message Name Length: 24'
+    def q_namelen?(line)
+      return /\A  Message Name Length: (?<namelen>\d+)\z/.match(line)
+    end
+    
+    # @example Format
     #   # NOT affected by namelen.
-    #   'P :SelfName:Message'
+    #   'P :Self.Name:Message'
     #   'P (Name)>Message'
     def remote?(line)
       match = match_player(line,type_name: :'remote.out',
