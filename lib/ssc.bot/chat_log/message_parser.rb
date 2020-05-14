@@ -52,12 +52,12 @@ class ChatLog
     # so no reason to manually cache them unless a variable is involved inside.
     # 
     # Do not pass spaces +' '+ into the args, must use +\s+ instead.
-    def match_player(line,type:,name_prefix: %r{},name_suffix: %r{\>\s},type_prefix: %r{..},use_namelen: true)
-      cached_regex = @regex_cache[type]
+    def match_player(line,type_name:,name_prefix: %r{},name_suffix: %r{\>\s},type_prefix: %r{..},use_namelen: true)
+      cached_regex = @regex_cache[type_name]
       
       if cached_regex.nil?()
         cached_regex = {}
-        @regex_cache[type] = cached_regex
+        @regex_cache[type_name] = cached_regex
       end
       
       if use_namelen && !@namelen.nil?()
@@ -90,7 +90,7 @@ class ChatLog
         end
       end
       
-      return line.match(regex)
+      return regex.match(line)
     end
     
     def parse(line)
@@ -124,7 +124,7 @@ class ChatLog
           else
             case line
             # '  Name(100) killed by: Name'
-            when /\A  .*[[:alnum:]]+\(\d+\) killed by: .*[[:alnum:]]+.*\z/
+            when /\A  .*?\S\(\d+\) killed by: .*?\S\z/
               #message = parse_kill(line)
             # '  Message Name Length: 24'
             when /\A  Message Name Length: \d+\z/
@@ -145,7 +145,7 @@ class ChatLog
     #   # NOT affected by namelen.
     #   'C 1:Name> Message'
     def parse_chat(line)
-      match = match_player(line,type: :chat,name_prefix: %r{(?<channel>\d+)\:},use_namelen: false)
+      match = match_player(line,type_name: :chat,name_prefix: %r{(?<channel>\d+)\:},use_namelen: false)
       player = parse_player(line,type_name: :chat,match: match)
       
       return nil if player.nil?()
@@ -178,7 +178,7 @@ class ChatLog
     # @example Format
     #   'X Name> Message'
     def parse_player(line,type_name:,match: nil)
-      match = match_player(line,type: :player) if match.nil?()
+      match = match_player(line,type_name: :player) if match.nil?()
       
       if match.nil?()
         if @strict
@@ -257,7 +257,7 @@ class ChatLog
     # @example Format
     #   '  Name> Message'
     def pub?(line)
-      match = match_player(line,type: :pub,type_prefix: %r{\s\s})
+      match = match_player(line,type_name: :pub,type_prefix: %r{\s\s})
       
       if !match.nil?()
         name = Util.u_lstrip(match[:name])
@@ -275,10 +275,12 @@ class ChatLog
     #   'P :SelfName:Message'
     #   'P (Name)>Message'
     def remote?(line)
-      match = match_player(line,type: :remote,name_prefix: %r{\:},name_suffix: %r{\:},use_namelen: false)
+      match = match_player(line,type_name: :'remote.out',
+        name_prefix: %r{\:},name_suffix: %r{\:},use_namelen: false)
       
       if match.nil?()
-        match = match_player(line,type: :remote,name_prefix: %r{\(},name_suffix: %r{\)\>},use_namelen: false)
+        match = match_player(line,type_name: :'remote.in',
+          name_prefix: %r{\(},name_suffix: %r{\)\>},use_namelen: false)
       end
       
       return match
