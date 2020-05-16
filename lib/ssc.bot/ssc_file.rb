@@ -43,7 +43,7 @@ module SSCBot
       @sscbot_separator = separator
     end
     
-    def gets_line()
+    def get_line()
       if @sscbot_buffer.nil?()
         # See comment at loop below.
         # - Use gets() instead of eof?() because of this method's name.
@@ -90,7 +90,7 @@ module SSCBot
     def seek_to_end()
       result = seek(0,:END)
       
-      gets_line() # Justin Case
+      get_line() # Justin Case
       
       return result
     end
