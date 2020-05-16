@@ -48,11 +48,16 @@ class ChatLog
       @strict = strict
     end
     
-    # The interpreter should cache the args' default values,
+    # The Ruby interpreter should cache the args' default values,
     # so no reason to manually cache them unless a variable is involved inside.
     # 
-    # Do not pass spaces +' '+ into the args, must use +\s+ instead.
-    def match_player(line,type_name:,name_prefix: %r{},name_suffix: %r{\>\s},type_prefix: %r{..},use_namelen: true)
+    # @example Default Format
+    #   'X Name> Message'
+    def match_player(line,type_name:,name_prefix: '',name_suffix: '> ',type_prefix: %r{..},use_namelen: true)
+      name_prefix = Util.quote_str_or_regex(name_prefix)
+      name_suffix = Util.quote_str_or_regex(name_suffix)
+      type_prefix = Util.quote_str_or_regex(type_prefix)
+      
       cached_regex = @regex_cache[type_name]
       
       if cached_regex.nil?()
@@ -64,11 +69,11 @@ class ChatLog
         regex = cached_regex[@namelen]
         
         if regex.nil?()
-          # Be careful to not use spaces ' ', but to use '\s' instead
+          # Be careful to not use spaces ' ', but to use '\\ ' (or '\s') instead
           # because of the '/x' option.
           regex = /
-            \A#{type_prefix.source}
-            #{name_prefix.source}(?<name>.{#{@namelen}})#{name_suffix.source}
+            \A#{type_prefix}
+            #{name_prefix}(?<name>.{#{@namelen}})#{name_suffix}
             (?<message>.*)\z
           /x
           
@@ -78,11 +83,11 @@ class ChatLog
         regex = cached_regex[:no_namelen]
         
         if regex.nil?()
-          # Be careful to not use spaces ' ', but to use '\s' instead
+          # Be careful to not use spaces ' ', but to use '\\ ' (or '\s') instead
           # because of the '/x' option.
           regex = /
-            \A#{type_prefix.source}
-            #{name_prefix.source}(?<name>.*?\S)#{name_suffix.source}
+            \A#{type_prefix}
+            #{name_prefix}(?<name>.*?\S)#{name_suffix}
             (?<message>.*)\z
           /x
           
@@ -148,17 +153,7 @@ class ChatLog
       
       return nil if player.nil?()
       
-      channel = match[:channel]
-      
-      if channel.nil?()
-        if @strict
-          raise ParseError,"invalid chat channel for chat message{#{line}}"
-        else
-          return nil
-        end
-      end
-      
-      channel = channel.to_i()
+      channel = match[:channel].to_i()
       
       return ChatMessage.new(line,channel: channel,name: player.name,message: player.message)
     end
@@ -185,39 +180,13 @@ class ChatLog
       end
       
       killed = match[:killed]
-      bounty = match[:bounty]
+      bounty = match[:bounty].to_i()
       killer = match[:killer]
-      
-      if killed.nil?()
-        if @strict
-          raise ParseError,"invalid killed name for kill message{#{line}}"
-        else
-          return nil
-        end
-      end
-      
-      if bounty.nil?()
-        if @strict
-          raise ParseError,"invalid bounty for kill message{#{line}}"
-        else
-          return nil
-        end
-      end
-      
-      if killer.nil?()
-        if @strict
-          raise ParseError,"invalid killer name for kill message{#{line}}"
-        else
-          return nil
-        end
-      end
-      
-      bounty = bounty.to_i()
       
       return KillMessage.new(line,killed: killed,bounty: bounty,killer: killer)
     end
     
-    # @example Format
+    # @example Default Format
     #   'X Name> Message'
     def parse_player(line,type_name:,match: nil)
       match = match_player(line,type_name: :player) if match.nil?()
@@ -233,17 +202,9 @@ class ChatLog
       name = Util.u_lstrip(match[:name])
       message = match[:message]
       
-      if name.nil?() || name.empty?() || name.length > MAX_NAMELEN
+      if name.empty?() || name.length > MAX_NAMELEN
         if @strict
           raise ParseError,"invalid player name for #{type_name} message{#{line}}"
-        else
-          return nil
-        end
-      end
-      
-      if message.nil?()
-        if @strict
-          raise ParseError,"invalid player message for #{type_name} message{#{line}}"
         else
           return nil
         end
@@ -283,8 +244,7 @@ class ChatLog
         end
       end
       
-      namelen = match[:namelen]
-      namelen = namelen.to_i() # nil is 0
+      namelen = match[:namelen].to_i()
       
       if namelen < 1
         if @strict
@@ -324,18 +284,22 @@ class ChatLog
     # @example Format
     #   '  Killed.Name(100) killed by: Killer.Name'
     def kill?(line)
+      return false if line.length < 19 # '  N(0) killed by: N'
+      
       return /\A  (?<killed>.*?\S)\((?<bounty>\d+)\) killed by: (?<killer>.*?\S)\z/.match(line)
     end
     
     # @example Format
     #   '  Name> Message'
     def pub?(line)
-      match = match_player(line,type_name: :pub,type_prefix: %r{\s\s})
+      return false if line.length < 5 # '  N> '
+      
+      match = match_player(line,type_name: :pub,type_prefix: '  ')
       
       if !match.nil?()
         name = Util.u_lstrip(match[:name])
         
-        if name.nil?() || name.empty?() || name.length > MAX_NAMELEN || match[:message].nil?()
+        if name.empty?() || name.length > MAX_NAMELEN
           return false
         end
       end
@@ -346,6 +310,8 @@ class ChatLog
     # @example Format
     #   '  Message Name Length: 24'
     def q_namelen?(line)
+      return false if line.length < 24 # '...: 0'
+      
       return /\A  Message Name Length: (?<namelen>\d+)\z/.match(line)
     end
     
@@ -354,12 +320,17 @@ class ChatLog
     #   'P :Self.Name:Message'
     #   'P (Name)>Message'
     def remote?(line)
-      match = match_player(line,type_name: :'remote.out',
-        name_prefix: %r{\:},name_suffix: %r{\:},use_namelen: false)
+      return false if line.length < 5 # 'P :N:'
       
-      if match.nil?()
+      case line[2]
+      when ':'
+        match = match_player(line,type_name: :'remote.out',
+          name_prefix: ':',name_suffix: ':',use_namelen: false)
+      when '('
         match = match_player(line,type_name: :'remote.in',
-          name_prefix: %r{\(},name_suffix: %r{\)\>},use_namelen: false)
+          name_prefix: '(',name_suffix: ')>',use_namelen: false)
+      else
+        return false
       end
       
       return match

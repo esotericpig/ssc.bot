@@ -30,6 +30,14 @@ module SSCBot
   # @since  0.1.0
   ###
   module Util
+    def self.quote_str_or_regex(value)
+      if value.respond_to?(:source)
+        return value.source.gsub(' ','\\ ') # For //x
+      else
+        return Regexp.quote(value)
+      end
+    end
+    
     # Universally, is +str+ empty after stripping or +nil+?
     def self.u_blank?(str)
       return str.nil?() || strip(str).empty?()
