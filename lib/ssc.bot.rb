@@ -21,8 +21,16 @@
 #++
 
 
+require 'ssc.bot/chat_log'
+require 'ssc.bot/chat_log_file'
 require 'ssc.bot/error'
+require 'ssc.bot/ssc_file'
+require 'ssc.bot/util'
 require 'ssc.bot/version'
+
+require 'ssc.bot/chat_log/message'
+require 'ssc.bot/chat_log/message_parser'
+require 'ssc.bot/chat_log/messages'
 
 
 ###
