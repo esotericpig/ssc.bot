@@ -54,7 +54,7 @@ Gem::Specification.new() do |spec|
     %w( CHANGELOG.md LICENSE.txt README.md ),
   ].flatten()
   
-  spec.required_ruby_version = '>= 2.4'
+  spec.required_ruby_version = '>= 2.5'
   
   spec.add_runtime_dependency 'attr_bool','~> 0.1'   # attr_accessor?/reader?
   
