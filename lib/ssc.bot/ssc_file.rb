@@ -35,6 +35,24 @@ module SSCBot
     DEFAULT_MODE = 'rt'
     DEFAULT_SEPARATOR = /\r?\n|\r/ # Instead, could use +/\R/+ for Ruby v2.0+
     
+    # If +filename+ exists, then it does nothing (does *not* update time),
+    # else, it creates the file.
+    # 
+    # I just prefer this over +FileUtils.touch+.
+    # 
+    # @param filename [String] the file to soft touch
+    # @param strip [Boolean] +true+ to strip +filename+ to help prevent fat-fingering, else +false+ to not
+    def self.soft_touch(filename,mode='at',strip: true,**opt)
+      filename = Util.u_strip(filename) if strip
+      
+      return if filename.empty?()
+      return if File.exist?(filename)
+      
+      # Create the file.
+      open(filename,mode,**opt) do |file|
+      end
+    end
+    
     def initialize(filename,mode=DEFAULT_MODE,buffer_len: DEFAULT_BUFFER_LEN,encoding: DEFAULT_ENCODING,separator: DEFAULT_SEPARATOR,**opt)
       super(filename,mode,encoding: encoding,**opt)
       
@@ -93,24 +111,6 @@ module SSCBot
       get_line() # Justin Case
       
       return result
-    end
-    
-    # If +filename+ exists, then it does nothing (does *not* update time),
-    # else, it creates the file.
-    # 
-    # I just prefer this over +FileUtils.touch+.
-    # 
-    # @param filename [String] the file to soft touch
-    # @param strip [Boolean] +true+ to strip +filename+ to help prevent fat-fingering, else +false+ to not
-    def self.soft_touch(filename,mode='at',strip: true,**opt)
-      filename = Util.u_strip(filename) if strip
-      
-      return if filename.empty?()
-      return if File.exist?(filename)
-      
-      # Create the file.
-      open(filename,mode,**opt) do |file|
-      end
     end
   end
 end
