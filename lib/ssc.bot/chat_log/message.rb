@@ -52,6 +52,12 @@ class ChatLog
       },
     ]
     
+    # @param  type [Symbol] the type to check if valid
+    # @return [Boolean] +true+ if +type+ is one of {TYPES}, else +false+
+    def self.valid_type?(type)
+      return TYPES.include?(type)
+    end
+    
     attr_reader :line # @return [String] the raw (unparsed) line from the file
     attr_reader :type # @return [Symbol] what type of message this is; one of {TYPES}
     
@@ -65,12 +71,6 @@ class ChatLog
       
       @line = line
       @type = type
-    end
-    
-    # @param  type [Symbol] the type to check if valid
-    # @return [Boolean] +true+ if +type+ is one of {TYPES}, else +false+
-    def self.valid_type?(type)
-      return TYPES.include?(type)
     end
     
     # A convenience method for comparing anything that responds to

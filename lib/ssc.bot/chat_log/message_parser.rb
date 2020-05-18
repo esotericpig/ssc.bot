@@ -54,10 +54,6 @@ class ChatLog
     # @example Default Format
     #   'X Name> Message'
     def match_player(line,type_name:,name_prefix: '',name_suffix: '> ',type_prefix: %r{..},use_namelen: true)
-      name_prefix = Util.quote_str_or_regex(name_prefix)
-      name_suffix = Util.quote_str_or_regex(name_suffix)
-      type_prefix = Util.quote_str_or_regex(type_prefix)
-      
       cached_regex = @regex_cache[type_name]
       
       if cached_regex.nil?()
@@ -69,6 +65,10 @@ class ChatLog
         regex = cached_regex[@namelen]
         
         if regex.nil?()
+          name_prefix = Util.quote_str_or_regex(name_prefix)
+          name_suffix = Util.quote_str_or_regex(name_suffix)
+          type_prefix = Util.quote_str_or_regex(type_prefix)
+          
           # Be careful to not use spaces ' ', but to use '\\ ' (or '\s') instead
           # because of the '/x' option.
           regex = /
@@ -83,6 +83,10 @@ class ChatLog
         regex = cached_regex[:no_namelen]
         
         if regex.nil?()
+          name_prefix = Util.quote_str_or_regex(name_prefix)
+          name_suffix = Util.quote_str_or_regex(name_suffix)
+          type_prefix = Util.quote_str_or_regex(type_prefix)
+          
           # Be careful to not use spaces ' ', but to use '\\ ' (or '\s') instead
           # because of the '/x' option.
           regex = /
