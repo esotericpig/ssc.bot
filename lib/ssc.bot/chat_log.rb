@@ -23,10 +23,13 @@
 
 require 'attr_bool'
 require 'forwardable'
+require 'set'
 
 require 'ssc.bot/ssc_file'
 
+require 'ssc.bot/chat_log/message'
 require 'ssc.bot/chat_log/message_parser'
+require 'ssc.bot/chat_log/messages'
 
 
 module SSCBot
@@ -70,8 +73,14 @@ module SSCBot
       @thread = nil
     end
     
-    def add_observer(observer=nil,*funcs,type: :all,&block)
-      type_observers = fetch_observers(type)
+    def add_observer(observer=nil,*funcs,type: :any,&block)
+      if observer.nil?() && block.nil?()
+        raise ArgumentError,'no observer'
+      end
+      
+      check_type(type)
+      
+      type_observers = fetch_observers(type: type)
       
       if !observer.nil?()
         funcs << :call if funcs.empty?()
@@ -84,8 +93,14 @@ module SSCBot
       end
     end
     
-    def add_observers(*observers,type: :all,func: :call,&block)
-      type_observers = fetch_observers(type)
+    def add_observers(*observers,type: :any,func: :call,&block)
+      if observers.empty?() && block.nil?()
+        raise ArgumentError,'no observer'
+      end
+      
+      check_type(type)
+      
+      type_observers = fetch_observers(type: type)
       
       observers.each() do |observer|
         type_observers << Observer.new(observer,func)
@@ -96,19 +111,83 @@ module SSCBot
       end
     end
     
+    def check_type(type,nil_ok: false)
+      if type.nil?()
+        if !nil_ok
+          raise ArgumentError,'type is nil'
+        end
+      else
+        if type != :any && !Message.valid_type?(type)
+          raise ArgumentError,"invalid type{#{type}}"
+        end
+      end
+    end
+    
     def clear_history()
       @messages.clear()
     end
     
-    def count_observers(type=nil)
-      # TODO: implement
+    def count_observers(type: nil)
+      check_type(type,nil_ok: true)
+      
+      count = 0
+      
+      if type.nil?()
+        @observers.each_value() do |type_observers|
+          count += type_observers.length
+        end
+      else
+        type_observers = @observers[type]
+        
+        if !type_observers.nil?()
+          count += type_observers.length
+        end
+      end
+      
+      return count
+    end
+    
+    def delete_observer(observer,type: nil)
+      delete_observers(observer,type: type)
     end
     
     def delete_observers(*observers,type: nil)
-      # TODO: implement
+      check_type(type,nil_ok: true)
+      
+      if observers.empty?()
+        if type.nil?()
+          @observers.clear()
+        else
+          type_observers = @observers[type]
+          
+          if !type_observers.nil?()
+            type_observers.clear()
+          end
+        end
+      else
+        observers = observers.to_set()
+        
+        if type.nil?()
+          @observers.each_value() do |type_observers|
+            type_observers.delete_if() do |observer|
+              observers.include?(observer.object)
+            end
+          end
+        else
+          type_observers = @observers[type]
+          
+          if !type_observers.nil?()
+            type_observers.delete_if() do |observer|
+              observers.include?(observer.object)
+            end
+          end
+        end
+      end
     end
     
-    def fetch_observers(type=:all)
+    def fetch_observers(type: :any)
+      check_type(type)
+      
       type_observers = @observers[type]
       
       if type_observers.nil?()
@@ -120,11 +199,11 @@ module SSCBot
     end
     
     def notify_observers(message)
-      all_observers = @observers[:all]
+      any_observers = @observers[:any]
       type_observers = @observers[message.type]
       
-      if !all_observers.nil?()
-        all_observers.each() do |observer|
+      if !any_observers.nil?()
+        any_observers.each() do |observer|
           observer.notify(self,message)
         end
       end
@@ -191,6 +270,9 @@ module SSCBot
     # @since  0.1.0
     ###
     class Observer
+      attr_reader :funcs
+      attr_reader :object
+      
       def initialize(object,*funcs)
         super()
         
