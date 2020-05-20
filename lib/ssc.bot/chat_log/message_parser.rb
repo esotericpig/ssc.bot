@@ -22,6 +22,7 @@
 
 
 require 'attr_bool'
+require 'set'
 
 require 'ssc.bot/error'
 require 'ssc.bot/util'
@@ -36,6 +37,7 @@ class ChatLog
   # @since  0.1.0
   ###
   class MessageParser
+    INIT_PARAMS = Set[:namelen,:strict]
     MAX_NAMELEN = 24
     
     attr_accessor :namelen
@@ -43,6 +45,8 @@ class ChatLog
     attr_accessor? :strict
     
     def initialize(namelen: nil,strict: true)
+      super()
+      
       @namelen = namelen
       @regex_cache = {}
       @strict = strict
