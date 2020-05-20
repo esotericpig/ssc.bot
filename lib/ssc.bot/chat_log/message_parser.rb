@@ -332,10 +332,10 @@ class ChatLog
       
       case line[2]
       when ':'
-        match = match_player(line,type_name: :'remote.out',
+        match = match_player(line,type_name: %s{remote.out},
           name_prefix: ':',name_suffix: ':',use_namelen: false)
       when '('
-        match = match_player(line,type_name: :'remote.in',
+        match = match_player(line,type_name: %s{remote.in},
           name_prefix: '(',name_suffix: ')>',use_namelen: false)
       else
         return false
