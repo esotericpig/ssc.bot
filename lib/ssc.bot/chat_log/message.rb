@@ -66,8 +66,8 @@ class ChatLog
     def initialize(line,type:)
       type = type.to_sym()
       
-      raise ArgumentError,"invalid line{#{line}}" if line.nil?()
-      raise ArgumentError,"invalid type{#{type}}" if !self.class.valid_type?(type)
+      raise ArgumentError,"invalid line{#{line.inspect()}}" if line.nil?()
+      raise ArgumentError,"invalid type{#{type.inspect()}}" if !self.class.valid_type?(type)
       
       @line = line
       @type = type

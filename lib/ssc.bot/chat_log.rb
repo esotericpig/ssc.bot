@@ -114,11 +114,11 @@ module SSCBot
     def check_type(type,nil_ok: false)
       if type.nil?()
         if !nil_ok
-          raise ArgumentError,'type is nil'
+          raise ArgumentError,"invalid type{#{type.inspect()}}"
         end
       else
         if type != :any && !Message.valid_type?(type)
-          raise ArgumentError,"invalid type{#{type}}"
+          raise ArgumentError,"invalid type{#{type.inspect()}}"
         end
       end
     end

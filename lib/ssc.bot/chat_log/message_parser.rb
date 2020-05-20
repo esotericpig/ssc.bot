@@ -109,7 +109,7 @@ class ChatLog
     def parse(line)
       if line.nil?()
         if @strict
-          raise ArgumentError,"invalid line{#{line}}"
+          raise ArgumentError,"invalid line{#{line.inspect()}}"
         else
           line = ''
         end
