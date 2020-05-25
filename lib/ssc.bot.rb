@@ -32,6 +32,8 @@ require 'ssc.bot/chat_log/message'
 require 'ssc.bot/chat_log/message_parser'
 require 'ssc.bot/chat_log/messages'
 
+require 'ssc.bot/user/message_sender'
+
 
 ###
 # @author Jonathan Bradley Whited (@esotericpig)
