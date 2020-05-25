@@ -55,7 +55,7 @@ module SSCBot
     attr_accessor? :store_history
     attr_reader :thread
     
-    def initialize(filename,file_mode: 'rt',file_opt: {},idle_time: 0.250,store_history: true,**kargs)
+    def initialize(filename,autoset_namelen: true,file_mode: 'rt',file_opt: {},idle_time: 0.250,store_history: true,**kargs)
       super()
       
       parser_args = kargs.slice(*MessageParser::INIT_PARAMS)
@@ -71,6 +71,10 @@ module SSCBot
       @semaphore = Mutex.new()
       @store_history = store_history
       @thread = nil
+      
+      if autoset_namelen
+        add_observer(self,:update_namelen,type: %s{?namelen})
+      end
     end
     
     def add_observer(observer=nil,*funcs,type: :any,&block)
@@ -215,7 +219,7 @@ module SSCBot
       end
     end
     
-    def run()
+    def run(seek_to_end: true)
       @semaphore.synchronize() do
         return if @alive # Already running
       end
@@ -229,7 +233,7 @@ module SSCBot
         
         @thread = Thread.new() do
           SSCFile.open(@filename,@file_mode,**@file_opt) do |fin|
-            fin.seek_to_end()
+            fin.seek_to_end() if seek_to_end
             
             while @alive
               while !(line = fin.get_line()).nil?()
@@ -263,6 +267,10 @@ module SSCBot
           @thread = nil
         end
       end
+    end
+    
+    def update_namelen(chat_log,message)
+      @parser.namelen = message.namelen
     end
     
     ###
