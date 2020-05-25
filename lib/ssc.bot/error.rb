@@ -28,5 +28,34 @@ module SSCBot
   ###
   class Error < ::StandardError; end
   
-  class ParseError < Error; end
+  ###
+  # @author Jonathan Bradley Whited (@esotericpig)
+  # @since  0.1.0
+  ###
+  class AbstractMethodError < Error
+    def initialize(msg=nil)
+      if msg.nil?()
+        method_name = caller[1]
+        
+        if !method_name.nil?()
+          index = method_name.rindex('`')
+          
+          if !index.nil?() && (index += 1) < method_name.length
+            method_name = method_name[index..-2]
+            
+            msg = "abstract method{#{method_name}(...)} not implemented"
+          end
+        end
+      end
+      
+      super(msg)
+    end
+  end
+  
+  ###
+  # @author Jonathan Bradley Whited (@esotericpig)
+  # @since  0.1.0
+  ###
+  class ParseError < Error
+  end
 end
