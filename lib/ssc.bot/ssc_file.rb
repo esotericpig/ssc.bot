@@ -35,6 +35,22 @@ module SSCBot
     DEFAULT_MODE = 'rt'
     DEFAULT_SEPARATOR = /\r?\n|\r/ # Instead, could use +/\R/+ for Ruby v2.0+
     
+    # Clear (truncate) the contents of +filename+.
+    # 
+    # @param filename [String] the file to clear
+    # @param strip [Boolean] +true+ to strip +filename+ to help prevent fat-fingering, else +false+ to not
+    def self.clear_content(filename,strip: true,textmode: true,**opt)
+      filename = Util.u_strip(filename) if strip
+      
+      return if filename.empty?()
+      return if !File.file?(filename) # Also checks if exists
+      
+      # Clear the file.
+      # - Do NOT call truncate() as it's not available on all platforms.
+      open(filename,'w',textmode: textmode,**opt) do |file|
+      end
+    end
+    
     # If +filename+ exists, then it does nothing (does *not* update time),
     # else, it creates the file.
     # 
@@ -42,14 +58,14 @@ module SSCBot
     # 
     # @param filename [String] the file to soft touch
     # @param strip [Boolean] +true+ to strip +filename+ to help prevent fat-fingering, else +false+ to not
-    def self.soft_touch(filename,mode='at',strip: true,**opt)
+    def self.soft_touch(filename,strip: true,textmode: true,**opt)
       filename = Util.u_strip(filename) if strip
       
       return if filename.empty?()
       return if File.exist?(filename)
       
       # Create the file.
-      open(filename,mode,**opt) do |file|
+      open(filename,'a',textmode: textmode,**opt) do |file|
       end
     end
     

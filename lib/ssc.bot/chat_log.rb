@@ -127,6 +127,10 @@ module SSCBot
       end
     end
     
+    def clear_content()
+      SSCFile.clear(@filename)
+    end
+    
     def clear_history()
       @messages.clear()
     end
@@ -229,7 +233,7 @@ module SSCBot
       @semaphore.synchronize() do
         @alive = true
         
-        SSCFile.soft_touch(@filename) # Create the file if it doesn't exist
+        soft_touch() # Create the file if it doesn't exist
         
         @thread = Thread.new() do
           SSCFile.open(@filename,@file_mode,**@file_opt) do |fin|
@@ -249,6 +253,10 @@ module SSCBot
           end
         end
       end
+    end
+    
+    def soft_touch()
+      SSCFile.soft_touch(@filename)
     end
     
     def stop(wait_time=5)
