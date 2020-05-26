@@ -126,21 +126,13 @@ class ChatLog
   ###
   class RemoteMessage < PlayerMessage
     attr_reader? :own
+    attr_reader? :squad
     
-    def initialize(line,own:,name:,message:)
+    def initialize(line,own:,squad:,name:,message:)
       super(line,type: :remote,name: name,message: message)
       
       @own = own
-    end
-  end
-  
-  ###
-  # @author Jonathan Bradley Whited (@esotericpig)
-  # @since  0.1.0
-  ###
-  class SquadMessage < PlayerMessage
-    def initialize(line,name:,message:)
-      super(line,type: :squad,name: name,message: message)
+      @squad = squad
     end
   end
   

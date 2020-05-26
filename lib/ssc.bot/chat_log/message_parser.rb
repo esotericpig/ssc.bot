@@ -275,8 +275,12 @@ class ChatLog
       return nil if player.nil?()
       
       own = (line[2] == ':')
+      squad = (player.name[0] == '#')
       
-      return RemoteMessage.new(line,own: own,name: player.name,message: player.message)
+      return RemoteMessage.new(line,
+        own: own,squad: squad,
+        name: player.name,message: player.message,
+      )
     end
     
     # @example Format

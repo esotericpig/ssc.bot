@@ -40,7 +40,7 @@ class ChatLog
     TYPES = Set[
       # In order of F1 Help box.
       *%i{
-        pub team private remote freq squad chat
+        pub team private remote freq chat
         ?lines ?namelen ?ignore ?nopubchat ?obscene ?away ?log ?logbuffer
           ?kill kill ?enter enter ?leave leave ?message ?messages ?chat
         ?status ?scorereset ?team ?spec ?target ?time ?flags ?score ?crown
