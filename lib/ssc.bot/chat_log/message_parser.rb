@@ -37,19 +37,30 @@ class ChatLog
   # @since  0.1.0
   ###
   class MessageParser
-    INIT_PARAMS = Set[:namelen,:strict]
     MAX_NAMELEN = 24
     
+    attr_accessor? :autoset_namelen
+    attr_accessor :check_history_count
+    attr_reader :messages
     attr_accessor :namelen
     attr_reader :regex_cache
+    attr_accessor? :store_history
     attr_accessor? :strict
     
-    def initialize(namelen: nil,strict: true)
+    def initialize(autoset_namelen: true,check_history_count: 5,namelen: nil,store_history: true,strict: true)
       super()
       
+      @autoset_namelen = autoset_namelen
+      @check_history_count = check_history_count
+      @messages = []
       @namelen = namelen
       @regex_cache = {}
+      @store_history = store_history
       @strict = strict
+    end
+    
+    def clear_history()
+      @messages.clear()
     end
     
     # The Ruby interpreter should cache the args' default values,
@@ -136,10 +147,13 @@ class ChatLog
           if (match = pub?(line))
             message = parse_pub(line,match: match)
           else
+            # In order of strictest to most flexible.
             if (match = kill?(line))
               message = parse_kill(line,match: match)
             elsif (match = q_namelen?(line))
               message = parse_q_namelen(line,match: match)
+            elsif (match = q_find?(line))
+              message = parse_q_find(line,match: match)
             end
           end
         end
@@ -147,6 +161,10 @@ class ChatLog
       
       if message.nil?()
         message = Message.new(line,type: :unknown)
+      end
+      
+      if @store_history
+        @messages << message
       end
       
       return message
@@ -242,6 +260,53 @@ class ChatLog
     end
     
     # @example Format
+    #   '  Not online, last seen more than 10 days ago'
+    #   '  Not online, last seen 9 days ago'
+    #   '  Not online, last seen 18 hours ago'
+    #   '  Not online, last seen 0 hours ago'
+    #   '  Name - Public 0'
+    #   '  TWCore - (Private arena)'
+    #   '  Name is in SSCJ Devastation'
+    #   '  Name is in SSCC Metal Gear CTF'
+    def parse_q_find(line,match:)
+      if match.nil?()
+        if @strict
+          raise ParseError,"invalid ?find message{#{line}}"
+        else
+          return nil
+        end
+      end
+      
+      caps = match.named_captures
+      q_find = nil
+      
+      if (days = caps['days'])
+        more = caps.key?('more')
+        days = days.to_i()
+        
+        q_find = QFindMessage.new(line,find_type: :days,more: more,days: days)
+      elsif (hours = caps['hours'])
+        hours = hours.to_i()
+        
+        q_find = QFindMessage.new(line,find_type: :hours,hours: hours)
+      elsif (player = caps['player'])
+        if (arena = caps['arena'])
+          private = (arena == '(Private arena)')
+          
+          q_find = QFindMessage.new(line,find_type: :arena,player: player,arena: arena,private: private)
+        elsif (zone = caps['zone'])
+          q_find = QFindMessage.new(line,find_type: :zone,player: player,zone: zone)
+        end
+      end
+      
+      if q_find.nil?() && @strict
+        raise ParseError,"invalid ?find message{#{line}}"
+      end
+      
+      return q_find
+    end
+    
+    # @example Format
     #   '  Message Name Length: 24'
     def parse_q_namelen(line,match:)
       if match.nil?()
@@ -260,6 +325,10 @@ class ChatLog
         else
           return nil
         end
+      end
+      
+      if @autoset_namelen
+        @namelen = namelen
       end
       
       return QNamelenMessage.new(line,namelen: namelen)
@@ -320,9 +389,80 @@ class ChatLog
     end
     
     # @example Format
+    #   '  Not online, last seen more than 10 days ago'
+    #   '  Not online, last seen 9 days ago'
+    #   '  Not online, last seen 18 hours ago'
+    #   '  Not online, last seen 0 hours ago'
+    #   '  Name - Public 0'
+    #   '  TWCore - (Private arena)'
+    #   '  Name is in SSCJ Devastation'
+    #   '  Name is in SSCC Metal Gear CTF'
+    def q_find?(line)
+      return false if line.length < 7 # '  N - A'
+      
+      # TODO: @check_history_count and @messages
+      
+      if line.start_with?('  Not online, last seen ')
+        match = line.match(/(?<more>more) than (?<days>\d+) days ago\z/)
+        
+        if match.nil?()
+          match = line.match(/(?<days>\d+) days? ago\z/)
+        end
+        
+        if match.nil?()
+          match = line.match(/(?<hours>\d+) hours? ago\z/)
+        end
+        
+        return match
+      else
+        match = line.match(/\A  (?<player>.+) is in (?<zone>.+)\z/)
+        
+        if match.nil?()
+          match = line.match(/\A  (?<player>.+) - (?<arena>.+)\z/)
+        end
+        
+        if match
+          caps = match.named_captures
+          
+          player = caps['player']
+          
+          if player.length > MAX_NAMELEN
+            return false
+          end
+          
+          if caps.key?('arena')
+            area = caps['arena']
+          elsif caps.key?('zone')
+            area = caps['zone']
+          else
+            return false
+          end
+          
+          [player[0],player[-1],area[0],area[-1]].each() do |c|
+            if c =~ /[[:space:]]/
+              return false
+            end
+          end
+          
+          return match
+        end
+      end
+      
+      return false
+    end
+    
+    # @example Format
+    def q_log?(line)
+      # TODO: implement q_log?()
+      
+      return false
+    end
+    
+    # @example Format
     #   '  Message Name Length: 24'
     def q_namelen?(line)
       return false if line.length < 24 # '...: 0'
+      return false if line[21] != ':'
       
       return /\A  Message Name Length: (?<namelen>\d+)\z/.match(line)
     end
@@ -336,16 +476,14 @@ class ChatLog
       
       case line[2]
       when ':'
-        match = match_player(line,type_name: %s{remote.out},
+        return match_player(line,type_name: %s{remote.out},
           name_prefix: ':',name_suffix: ':',use_namelen: false)
       when '('
-        match = match_player(line,type_name: %s{remote.in},
+        return match_player(line,type_name: %s{remote.in},
           name_prefix: '(',name_suffix: ')>',use_namelen: false)
-      else
-        return false
       end
       
-      return match
+      return false
     end
   end
 end

@@ -110,6 +110,34 @@ class ChatLog
   # @author Jonathan Bradley Whited (@esotericpig)
   # @since  0.1.0
   ###
+  class QFindMessage < Message
+    attr_reader :arena
+    attr_reader :days
+    attr_reader :find_type # [:arena,:days,:hours,:zone]
+    attr_reader :hours
+    attr_reader? :more
+    attr_reader :player
+    attr_reader? :private
+    attr_reader :zone
+    
+    def initialize(line,find_type:,arena: nil,days: nil,hours: nil,more: false,player: nil,private: false,zone: nil)
+      super(line,type: %s{?find})
+      
+      @arena = arena
+      @days = days
+      @find_type = find_type
+      @hours = hours
+      @more = more
+      @player = player
+      @private = private
+      @zone = zone
+    end
+  end
+  
+  ###
+  # @author Jonathan Bradley Whited (@esotericpig)
+  # @since  0.1.0
+  ###
   class QNamelenMessage < Message
     attr_reader :namelen
     
