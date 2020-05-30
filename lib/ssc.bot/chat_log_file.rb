@@ -38,25 +38,35 @@ module SSCBot
     
     MAX_NAMELEN = ChatLog::MessageParser::MAX_NAMELEN
     
-    def_delegators :@parser,:namelen,:namelen=,:parse,:regex_cache,:strict?,:strict=
+    def_delegators(:@parser,
+      :autoset_namelen?,
+      :autoset_namelen=,
+      :check_history_count,
+      :check_history_count=,
+      :messages,
+      :namelen,
+      :namelen=,
+      :regex_cache,
+      :store_history?,
+      :store_history=,
+      :strict?,
+      :strict=,
+      
+      :parse,
+    )
     
     attr_reader :parser
     
-    def initialize(filename,mode=DEFAULT_MODE,**kargs)
-      file_args = kargs.reject() {|k,v| ChatLog::MessageParser::INIT_PARAMS.include?(k) }
-      parser_args = kargs.slice(*ChatLog::MessageParser::INIT_PARAMS)
+    def initialize(filename,mode=DEFAULT_MODE,parser: ChatLog::MessageParser.new(),**file_kargs)
+      super(filename,mode,**file_kargs)
       
-      super(filename,mode,**file_args)
-      
-      @parser = ChatLog::MessageParser.new(**parser_args)
+      @parser = parser
     end
     
     def parse_line()
       line = get_line()
       
-      return nil if line.nil?()
-      
-      return parse(line)
+      return line.nil?() ? nil : parse(line)
     end
   end
 end

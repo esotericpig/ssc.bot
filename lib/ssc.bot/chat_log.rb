@@ -42,39 +42,44 @@ module SSCBot
     
     MAX_NAMELEN = MessageParser::MAX_NAMELEN
     
-    def_delegators :@parser,:namelen,:namelen=,:parse,:regex_cache,:strict?,:strict=
+    def_delegators(:@parser,
+      :autoset_namelen?,
+      :autoset_namelen=,
+      :check_history_count,
+      :check_history_count=,
+      :messages,
+      :namelen,
+      :namelen=,
+      :regex_cache,
+      :store_history?,
+      :store_history=,
+      :strict?,
+      :strict=,
+      
+      :parse,
+    )
     
     attr_reader? :alive
     attr_accessor :file_mode
     attr_reader :file_opt
     attr_accessor :filename
     attr_accessor :idle_time
-    attr_reader :messages
     attr_reader :observers
     attr_reader :parser
-    attr_accessor? :store_history
     attr_reader :thread
     
-    def initialize(filename,autoset_namelen: true,file_mode: 'rt',file_opt: {},idle_time: 0.250,store_history: true,**kargs)
+    def initialize(filename,file_mode: 'rt',file_opt: {},idle_time: 0.250,**parser_kargs)
       super()
-      
-      parser_args = kargs.slice(*MessageParser::INIT_PARAMS)
       
       @alive = false
       @file_mode = file_mode
       @file_opt = file_opt
       @filename = filename
       @idle_time = idle_time
-      @messages = []
       @observers = {}
-      @parser = MessageParser.new(**parser_args)
+      @parser = MessageParser.new(**parser_kargs)
       @semaphore = Mutex.new()
-      @store_history = store_history
       @thread = nil
-      
-      if autoset_namelen
-        add_observer(self,:update_namelen,type: %s{?namelen})
-      end
     end
     
     def add_observer(observer=nil,*funcs,type: :any,&block)
@@ -129,10 +134,6 @@ module SSCBot
     
     def clear_content()
       SSCFile.clear(@filename)
-    end
-    
-    def clear_history()
-      @messages.clear()
     end
     
     def count_observers(type: nil)
@@ -244,8 +245,6 @@ module SSCBot
                 message = @parser.parse(line)
                 
                 notify_observers(message)
-                
-                @messages << message if @store_history
               end
               
               sleep(@idle_time)
@@ -275,10 +274,6 @@ module SSCBot
           @thread = nil
         end
       end
-    end
-    
-    def update_namelen(chat_log,message)
-      @parser.namelen = message.namelen
     end
     
     ###
