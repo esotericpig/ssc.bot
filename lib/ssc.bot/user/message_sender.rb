@@ -21,9 +21,11 @@
 #++
 
 
+require 'attr_bool'
 require 'time'
 
 require 'ssc.bot/error'
+require 'ssc.bot/util'
 
 
 module SSCBot
@@ -33,9 +35,9 @@ module User
   # @since  0.1.0
   ###
   class MessageSender
+    DEFAULT_ESCAPE_STR = '.'
     DEFAULT_FLOOD_COUNT = 8
-    DEFAULT_FLOOD_SLEEP = 6
-    DEFAULT_FLOOD_SLEEP_MIN = 0.001
+    DEFAULT_FLOOD_MIN_SLEEP = 0.001
     DEFAULT_FLOOD_TIME = 6
     
     # Message Macros
@@ -56,35 +58,84 @@ module User
     MM_REDBOUNTY = '%redbounty'
     MM_REDFLAGS = '%redflags'
     
+    attr_accessor? :escape_percent
+    attr_accessor? :escape_space
+    attr_accessor :escape_str
     attr_accessor :flood_count
+    attr_accessor :flood_min_sleep
     attr_accessor :flood_time
-    attr_accessor :message_count
+    attr_reader :message_count
+    attr_reader :message_time
+    attr_accessor? :staff
     
-    def put_message(text)
+    def put(message)
       raise AbstractMethodError
     end
     
-    def puts_message(text)
+    def send(message)
       raise AbstractMethodError
     end
     
-    def type_message(text)
+    def type(message)
       raise AbstractMethodError
     end
     
-    def types_message(text)
+    def types(message)
       raise AbstractMethodError
     end
     
-    def initialize(flood_count: DEFAULT_FLOOD_COUNT,flood_sleep: DEFAULT_FLOOD_SLEEP,flood_sleep_min: DEFAULT_FLOOD_SLEEP_MIN,flood_time: DEFAULT_FLOOD_TIME)
+    def initialize(escape_percent: false,escape_space: true,escape_str: DEFAULT_ESCAPE_STR,flood_count: DEFAULT_FLOOD_COUNT,flood_min_sleep: DEFAULT_FLOOD_MIN_SLEEP,flood_time: DEFAULT_FLOOD_TIME,staff: false)
       super()
       
+      @escape_percent = escape_percent
+      @escape_space = escape_space
+      @escape_str = escape_str
       @flood_count = flood_count
-      @flood_sleep = flood_sleep
-      @flood_sleep_min = flood_sleep_min
+      @flood_min_sleep = flood_min_sleep
       @flood_time = flood_time
       @message_count = 0
       @message_time = Time.now()
+      @staff = staff
+    end
+    
+    def escape_pub(message,escape_percent: @escape_percent,escape_space: @escape_space,escape_str: @escape_str,staff: @staff)
+      if escape_percent
+        message = message.gsub('%','%%')
+      end
+      
+      escape = false
+      
+      case message[0]
+      when '#'
+        escape = true
+      else
+        if escape_space && message[0] =~ /[[:space:]]/
+          escape = true
+        else
+          stripped_message = Util.u_lstrip(message)
+          
+          case stripped_message[0]
+          when ':'
+            if stripped_message.index(':',1)
+              escape = true
+            end
+          when '/',%q{'},'"',';','='
+            escape = true
+          when '?'
+            if stripped_message[1] =~ /[[:alpha:]]/
+              escape = true
+            end
+          when '*','-'
+            escape = true if staff
+          end
+        end
+      end
+      
+      if escape
+        message = "#{escape_str}#{message}"
+      end
+      
+      return message
     end
     
     def prevent_flood()
@@ -94,10 +145,10 @@ module User
         diff_time = Time.now() - @message_time
         
         if diff_time <= @flood_time
-          sleep_time = (@flood_sleep - diff_time).round(4) + 0.001
-          sleep_time = @flood_sleep_min if sleep_time < @flood_sleep_min
+          sleep_time = (@flood_time - diff_time).round(4) + 0.001
+          sleep_time = @flood_min_sleep if sleep_time < @flood_min_sleep
         else
-          sleep_time = @flood_sleep_min
+          sleep_time = @flood_min_sleep
         end
         
         sleep(sleep_time)
@@ -108,154 +159,153 @@ module User
       @message_time = Time.now()
     end
     
-    def put_or_type_message(text)
-      put_message(text)
+    def put_or_type(message)
+      put(message)
     end
     
-    def puts_or_types_message(text)
-      puts_message(text)
+    def send_or_types(message)
+      send(message)
     end
     
-    def puts_or_types_safe_message(text)
-      puts_or_types_message(text)
+    def send_or_types_safe(message)
+      send_or_types(message)
       prevent_flood()
     end
     
-    def puts_safe_message(text)
-      puts_message(text)
+    def send_safe(message)
+      send(message)
       prevent_flood()
     end
     
-    def types_safe_message(text)
-      types_message(text)
+    def types_safe(message)
+      types(message)
       prevent_flood()
     end
     
-    def puts_chat_message(text)
-      puts_safe_message(";#{text}")
+    def send_chat(message)
+      send_safe(";#{message}")
     end
     
-    def puts_chat_message_to(channel,text)
-      puts_safe_message(";#{channel};#{text}")
+    def send_chat_to(channel,message)
+      send_safe(";#{channel};#{message}")
     end
     
-    def puts_freq_message(text)
-      puts_safe_message(%Q{"#{text}})
+    def send_freq(message)
+      send_safe(%Q{"#{message}})
     end
     
-    def puts_private_message(text)
-      puts_safe_message("/#{text}")
+    def send_freq_eq(freq)
+      send_safe("=#{freq}")
     end
     
-    def puts_private_message_to(name,text)
-      puts_safe_message(":#{name}:#{text}")
+    def send_private(message)
+      send_safe("/#{message}")
     end
     
-    def puts_private_message_to_last(last,text=nil)
-      if text.nil?()
-        text = last
-        last = 1
-      end
-      
-      put_or_type_message('::')
+    def send_private_to(name,message)
+      send_safe(":#{name}:#{message}")
+    end
+    
+    def send_private_to_last(message,last=1)
+      put_or_type('::')
       
       while (last -= 1) > 0
-        put_or_type_message(':')
+        put_or_type(':')
       end
       
-      puts_safe_message(text)
+      send_safe(message)
     end
     
-    def puts_pub_message(text)
-      puts_safe_message(text)
+    def send_pub(message,**kargs)
+      send_safe(escape_pub(message,**kargs))
     end
     
-    def puts_q_chat()
-      puts_safe_message('?chat')
+    def send_q_chat()
+      send_safe('?chat')
     end
     
-    def puts_q_chat_to(*names)
-      puts_safe_message("?chat=#{names.join(',')}")
+    def send_q_chat_eq(*names)
+      send_safe("?chat=#{names.join(',')}")
     end
     
-    def puts_q_enter()
-      puts_safe_message('?enter')
+    def send_q_enter()
+      send_safe('?enter')
     end
     
-    def puts_q_find(player)
-      puts_safe_message("?find #{player}")
+    def send_q_find(player)
+      send_safe("?find #{player}")
     end
     
-    def puts_q_kill()
-      puts_safe_message('?kill')
+    def send_q_kill()
+      send_safe('?kill')
     end
     
-    def puts_q_leave()
-      puts_safe_message('?leave')
+    def send_q_leave()
+      send_safe('?leave')
     end
     
-    def puts_q_loadmacro(filename)
-      puts_safe_message("?loadmacro #{filename}")
+    def send_q_loadmacro(filename)
+      send_safe("?loadmacro #{filename}")
     end
     
-    def puts_q_log()
-      puts_safe_message('?log')
+    def send_q_log()
+      send_safe('?log')
     end
     
-    def puts_q_log_to(filename)
-      puts_safe_message("?#{filename}")
+    def send_q_log_to(filename)
+      send_safe("?log #{filename}")
     end
     
-    def puts_q_logbuffer()
-      puts_safe_message('?logbuffer')
+    def send_q_logbuffer()
+      send_safe('?logbuffer')
     end
     
-    def puts_q_logbuffer_to(filename)
-      puts_safe_message("?#{filename}")
+    def send_q_logbuffer_to(filename)
+      send_safe("?logbuffer #{filename}")
     end
     
-    def puts_q_namelen()
-      puts_safe_message('?namelen')
+    def send_q_namelen()
+      send_safe('?namelen')
     end
     
-    def puts_q_namelen_to(namelen)
-      puts_safe_message("?namelen=#{namelen}")
+    def send_q_namelen_eq(namelen)
+      send_safe("?namelen=#{namelen}")
     end
     
-    def puts_q_lines()
-      puts_safe_message('?lines')
+    def send_q_lines()
+      send_safe('?lines')
     end
     
-    def puts_q_lines_to(lines)
-      puts_safe_message("?lines=#{lines}")
+    def send_q_lines_eq(lines)
+      send_safe("?lines=#{lines}")
     end
     
-    def puts_q_savemacro(filename)
-      puts_safe_message("?savemacro #{filename}")
+    def send_q_savemacro(filename)
+      send_safe("?savemacro #{filename}")
     end
     
-    def puts_q_spec()
-      puts_safe_message('?spec')
+    def send_q_spec()
+      send_safe('?spec')
     end
     
-    def puts_q_team()
-      puts_safe_message('?team')
+    def send_q_team()
+      send_safe('?team')
     end
     
-    def puts_squad_message(text)
-      puts_safe_message("##{text}")
+    def send_squad(message)
+      send_safe("##{message}")
     end
     
-    def puts_squad_message_to(squad,text)
-      puts_safe_message(":##{squad}:#{text}")
+    def send_squad_to(squad,message)
+      send_safe(":##{squad}:#{message}")
     end
     
-    def puts_team_message(text)
-      puts_safe_message("//#{text}")
+    def send_team(message)
+      send_safe("//#{message}")
     end
     
-    def puts_team_message2(text)
-      puts_safe_message("'#{text}")
+    def send_team2(message)
+      send_safe("'#{message}")
     end
     
     def mm_tickname()
