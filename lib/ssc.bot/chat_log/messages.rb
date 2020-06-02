@@ -138,6 +138,22 @@ class ChatLog
   # @author Jonathan Bradley Whited (@esotericpig)
   # @since  0.1.0
   ###
+  class QLogMessage < Message
+    attr_reader :filename
+    attr_reader :log_type # [:open,:close]
+    
+    def initialize(line,log_type:,filename: nil)
+      super(line,type: %s{?log})
+      
+      @filename = filename
+      @log_type = log_type
+    end
+  end
+  
+  ###
+  # @author Jonathan Bradley Whited (@esotericpig)
+  # @since  0.1.0
+  ###
   class QNamelenMessage < Message
     attr_reader :namelen
     

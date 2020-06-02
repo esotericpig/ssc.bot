@@ -42,6 +42,7 @@ class ChatLog
     
     attr_accessor? :autoset_namelen
     attr_accessor :check_history_count
+    attr_reader :commands
     attr_reader :messages
     attr_accessor :namelen
     attr_reader :regex_cache
@@ -53,15 +54,12 @@ class ChatLog
       
       @autoset_namelen = autoset_namelen
       @check_history_count = check_history_count
+      @commands = {}
       @messages = []
       @namelen = namelen
       @regex_cache = {}
       @store_history = store_history
       @strict = strict
-    end
-    
-    def clear_history()
-      @messages.clear()
     end
     
     # The Ruby interpreter should cache the args' default values,
@@ -148,13 +146,17 @@ class ChatLog
           if (match = pub?(line))
             message = parse_pub(line,match: match)
           else
-            # In order of strictest to most flexible.
             if (match = kill?(line))
               message = parse_kill(line,match: match)
+            elsif (match = q_log?(line))
+              message = parse_q_log(line,match: match)
             elsif (match = q_namelen?(line))
               message = parse_q_namelen(line,match: match)
-            elsif (match = q_find?(line))
-              message = parse_q_find(line,match: match)
+            else
+              # These are last because too flexible.
+              if (match = q_find?(line))
+                message = parse_q_find(line,match: match)
+              end
             end
           end
         end
@@ -257,6 +259,12 @@ class ChatLog
       
       return nil if player.nil?()
       
+      stripped = Util.u_strip(player.message).downcase()
+      
+      if stripped.start_with?('?find')
+        store_command(:pub,%s{?find})
+      end
+      
       return PubMessage.new(line,name: player.name,message: player.message)
     end
     
@@ -305,6 +313,24 @@ class ChatLog
       end
       
       return q_find
+    end
+    
+    # @example Format
+    #   '  Log file open: session.log'
+    #   '  Log file closed'
+    def parse_q_log(line,match:)
+      if match.nil?()
+        if @strict
+          raise ParseError,"invalid ?log message{#{line}}"
+        else
+          return nil
+        end
+      end
+      
+      filename = match.named_captures['filename']
+      log_type = filename.nil?() ? :close : :open
+      
+      return QLogMessage.new(line,log_type: log_type,filename: filename)
     end
     
     # @example Format
@@ -363,6 +389,43 @@ class ChatLog
       return TeamMessage.new(line,name: player.name,message: player.message)
     end
     
+    def clear_history()
+      @messages.clear()
+    end
+    
+    def reset_namelen()
+      @namelen = nil
+    end
+    
+    def store_command(type,name)
+      type_hash = @commands[type]
+      
+      if type_hash.nil?()
+        type_hash = {}
+        @commands[type] = type_hash
+      end
+      
+      type_hash[name] = @messages.length
+    end
+    
+    def command?(type,name,delete: true)
+      return true if @check_history_count < 1
+      
+      type_hash = @commands[type]
+      
+      if !type_hash.nil?()
+        index = type_hash[name]
+        
+        if !index.nil?() && (@messages.length - index) <= @check_history_count
+          type_hash.delete(name) if delete
+          
+          return true
+        end
+      end
+      
+      return false
+    end
+    
     # @example Format
     #   '  Killed.Name(100) killed by: Killer.Name'
     def kill?(line)
@@ -400,8 +463,7 @@ class ChatLog
     #   '  Name is in SSCC Metal Gear CTF'
     def q_find?(line)
       return false if line.length < 7 # '  N - A'
-      
-      # TODO: @check_history_count and @messages
+      return false unless command?(:pub,%s{?find})
       
       if line.start_with?('  Not online, last seen ')
         match = line.match(/(?<more>more) than (?<days>\d+) days ago\z/)
@@ -453,10 +515,18 @@ class ChatLog
     end
     
     # @example Format
+    #   '  Log file open: session.log'
+    #   '  Log file closed'
     def q_log?(line)
-      # TODO: implement q_log?()
+      return false if line.length < 17
       
-      return false
+      match = /\A  Log file open: (?<filename>.+)\z/.match(line)
+      
+      if match.nil?()
+        match = /\A  Log file closed\z/.match(line)
+      end
+      
+      return match
     end
     
     # @example Format
