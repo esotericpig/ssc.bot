@@ -28,6 +28,7 @@ require 'set'
 require 'ssc.bot/ssc_file'
 
 require 'ssc.bot/chat_log/message'
+require 'ssc.bot/chat_log/message_parsable'
 require 'ssc.bot/chat_log/message_parser'
 require 'ssc.bot/chat_log/messages'
 
@@ -38,26 +39,7 @@ module SSCBot
   # @since  0.1.0
   ###
   class ChatLog
-    extend Forwardable
-    
-    MAX_NAMELEN = MessageParser::MAX_NAMELEN
-    
-    def_delegators(:@parser,
-      :autoset_namelen?,
-      :autoset_namelen=,
-      :check_history_count,
-      :check_history_count=,
-      :messages,
-      :namelen,
-      :namelen=,
-      :regex_cache,
-      :store_history?,
-      :store_history=,
-      :strict?,
-      :strict=,
-      
-      :parse,
-    )
+    include MessageParsable
     
     attr_reader? :alive
     attr_accessor :file_mode
@@ -65,7 +47,6 @@ module SSCBot
     attr_accessor :filename
     attr_accessor :idle_time
     attr_reader :observers
-    attr_reader :parser
     attr_reader :thread
     
     def initialize(filename,file_mode: 'rt',file_opt: {},idle_time: 0.250,**parser_kargs)
