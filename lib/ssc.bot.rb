@@ -29,6 +29,7 @@ require 'ssc.bot/util'
 require 'ssc.bot/version'
 
 require 'ssc.bot/chat_log/message'
+require 'ssc.bot/chat_log/message_parsable'
 require 'ssc.bot/chat_log/message_parser'
 require 'ssc.bot/chat_log/messages'
 
