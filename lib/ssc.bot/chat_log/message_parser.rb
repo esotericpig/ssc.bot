@@ -134,7 +134,7 @@ class ChatLog
         when 'E'
           message = parse_freq(line)
         when 'P'
-          if (match = remote?(line))
+          if (match = match_remote?(line))
             message = parse_remote(line,match: match)
           else
             message = parse_private(line)
@@ -143,18 +143,18 @@ class ChatLog
           message = parse_team(line)
         else
           # Check this one first to prevent abuse from pubbers.
-          if (match = pub?(line))
+          if (match = match_pub?(line))
             message = parse_pub(line,match: match)
           else
-            if (match = kill?(line))
+            if (match = match_kill?(line))
               message = parse_kill(line,match: match)
-            elsif (match = q_log?(line))
+            elsif (match = match_q_log?(line))
               message = parse_q_log(line,match: match)
-            elsif (match = q_namelen?(line))
+            elsif (match = match_q_namelen?(line))
               message = parse_q_namelen(line,match: match)
             else
               # These are last because too flexible.
-              if (match = q_find?(line))
+              if (match = match_q_find?(line))
                 message = parse_q_find(line,match: match)
               end
             end
@@ -429,7 +429,7 @@ class ChatLog
     
     # @example Format
     #   '  Killed.Name(100) killed by: Killer.Name'
-    def kill?(line)
+    def match_kill?(line)
       return false if line.length < 19 # '  N(0) killed by: N'
       
       return /\A  (?<killed>.*?\S)\((?<bounty>\d+)\) killed by: (?<killer>.*?\S)\z/.match(line)
@@ -437,7 +437,7 @@ class ChatLog
     
     # @example Format
     #   '  Name> Message'
-    def pub?(line)
+    def match_pub?(line)
       return false if line.length < 5 # '  N> '
       
       match = match_player(line,type_name: :pub,type_prefix: '  ')
@@ -462,7 +462,7 @@ class ChatLog
     #   '  TWCore - (Private arena)'
     #   '  Name is in SSCJ Devastation'
     #   '  Name is in SSCC Metal Gear CTF'
-    def q_find?(line)
+    def match_q_find?(line)
       return false if line.length < 7 # '  N - A'
       return false unless command?(:pub,%s{?find})
       
@@ -518,7 +518,7 @@ class ChatLog
     # @example Format
     #   '  Log file open: session.log'
     #   '  Log file closed'
-    def q_log?(line)
+    def match_q_log?(line)
       return false if line.length < 17
       
       match = /\A  Log file open: (?<filename>.+)\z/.match(line)
@@ -532,7 +532,7 @@ class ChatLog
     
     # @example Format
     #   '  Message Name Length: 24'
-    def q_namelen?(line)
+    def match_q_namelen?(line)
       return false if line.length < 24 # '...: 0'
       return false if line[21] != ':'
       
@@ -543,7 +543,7 @@ class ChatLog
     #   # NOT affected by namelen.
     #   'P :Self.Name:Message'
     #   'P (Name)>Message'
-    def remote?(line)
+    def match_remote?(line)
       return false if line.length < 5 # 'P :N:'
       
       case line[2]
