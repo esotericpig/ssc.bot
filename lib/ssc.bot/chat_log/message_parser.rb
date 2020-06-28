@@ -217,8 +217,9 @@ class ChatLog
     
     # @example Default Format
     #   'X Name> Message'
-    def parse_player(line,type_name:,match: nil)
-      match = match_player(line,type_name: :player) if match.nil?()
+    def parse_player(line,type_name:,match: :default)
+      # Use type_name of :player (not passed in param) for regex_cache.
+      match = match_player(line,type_name: :player) if match == :default
       
       if match.nil?()
         if @strict
@@ -254,14 +255,14 @@ class ChatLog
     
     # @example Format
     #   '  Name> Message'
-    def parse_pub(line,match: nil)
+    def parse_pub(line,match:)
       player = parse_player(line,type_name: :pub,match: match)
       
       return nil if player.nil?()
       
-      stripped = Util.u_strip(player.message).downcase()
+      cmd = Util.u_strip(player.message).downcase()
       
-      if stripped.start_with?('?find')
+      if cmd.start_with?('?find')
         store_command(:pub,%s{?find})
       end
       
@@ -405,7 +406,7 @@ class ChatLog
         @commands[type] = type_hash
       end
       
-      type_hash[name] = @messages.length
+      type_hash[name] = @messages.length # Index of when command was found/stored
     end
     
     def command?(type,name,delete: true)
