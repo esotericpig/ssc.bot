@@ -72,15 +72,11 @@ module User
       raise AbstractMethodError
     end
     
-    def send(message)
+    def send_message()
       raise AbstractMethodError
     end
     
     def type(message)
-      raise AbstractMethodError
-    end
-    
-    def types(message)
       raise AbstractMethodError
     end
     
@@ -163,6 +159,11 @@ module User
       put(message)
     end
     
+    def send(message)
+      put(message)
+      send_message()
+    end
+    
     def send_or_types(message)
       send(message)
     end
@@ -175,6 +176,11 @@ module User
     def send_safe(message)
       send(message)
       prevent_flood()
+    end
+    
+    def types(message)
+      type(message)
+      send_message()
     end
     
     def types_safe(message)
