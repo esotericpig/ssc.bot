@@ -21,6 +21,9 @@
 #++
 
 
+require 'rbconfig'
+
+
 module SSCBot
   ###
   # Your typical utility methods that
@@ -30,6 +33,29 @@ module SSCBot
   # @since  0.1.0
   ###
   module Util
+    def self.os(host_os=RbConfig::CONFIG['host_os'])
+      os = :unknown
+      
+      case host_os
+      when /darwin/i
+        os = :macos
+      # I think 'cygwin' here makes sense.
+      when /linux|arch|cygwin/i
+        os = :linux
+      else
+        # Here so that 'win' doesn't capture 'darwin'.
+        case host_os
+        # windows|mswin|bccwin|wince
+        when /win|mingw|emx/i
+          os = :windows
+        end
+      end
+      
+      return os
+    end
+    
+    OS = os()
+    
     def self.quote_str_or_regex(value)
       if value.respond_to?(:source)
         return value.source.gsub(' ','\\ ') # For //x
