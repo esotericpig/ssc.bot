@@ -91,8 +91,8 @@ class ChatLog
   # @since  0.1.0
   ###
   class PrivateMessage < PlayerMessage
-    def initialize(line,name:,message:)
-      super(line,type: :private,name: name,message: message)
+    def initialize(line,name:,message:,type: :private)
+      super(line,type: type,name: name,message: message)
     end
   end
   
@@ -168,7 +168,7 @@ class ChatLog
   # @author Jonathan Bradley Whited (@esotericpig)
   # @since  0.1.0
   ###
-  class RemoteMessage < PlayerMessage
+  class RemoteMessage < PrivateMessage
     attr_reader? :own
     attr_reader? :squad
     
