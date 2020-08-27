@@ -38,7 +38,7 @@ module User
     DEFAULT_ESCAPE_STR = '.'
     DEFAULT_FLOOD_COUNT = 8
     DEFAULT_FLOOD_MIN_SLEEP = 0.001
-    DEFAULT_FLOOD_TIME = 6
+    DEFAULT_FLOOD_SECS = 6
     
     # Message Macros
     # - In order of F1 Help box.
@@ -63,7 +63,7 @@ module User
     attr_accessor :escape_str
     attr_accessor :flood_count
     attr_accessor :flood_min_sleep
-    attr_accessor :flood_time
+    attr_accessor :flood_secs
     attr_reader :message_count
     attr_reader :message_time
     attr_accessor? :staff
@@ -80,7 +80,7 @@ module User
       raise AbstractMethodError
     end
     
-    def initialize(escape_percent: false,escape_space: true,escape_str: DEFAULT_ESCAPE_STR,flood_count: DEFAULT_FLOOD_COUNT,flood_min_sleep: DEFAULT_FLOOD_MIN_SLEEP,flood_time: DEFAULT_FLOOD_TIME,staff: false)
+    def initialize(escape_percent: false,escape_space: true,escape_str: DEFAULT_ESCAPE_STR,flood_count: DEFAULT_FLOOD_COUNT,flood_min_sleep: DEFAULT_FLOOD_MIN_SLEEP,flood_secs: DEFAULT_FLOOD_SECS,staff: false)
       super()
       
       @escape_percent = escape_percent
@@ -88,7 +88,7 @@ module User
       @escape_str = escape_str
       @flood_count = flood_count
       @flood_min_sleep = flood_min_sleep
-      @flood_time = flood_time
+      @flood_secs = flood_secs
       @message_count = 0
       @message_time = Time.now()
       @staff = staff
@@ -140,14 +140,14 @@ module User
       if @message_count >= @flood_count
         diff_time = Time.now() - @message_time
         
-        if diff_time <= @flood_time
-          sleep_time = (@flood_time - diff_time).round(4) + 0.001
-          sleep_time = @flood_min_sleep if sleep_time < @flood_min_sleep
+        if diff_time <= @flood_secs
+          sleep_secs = (@flood_secs - diff_time).round(4) + 0.001
+          sleep_secs = @flood_min_sleep if sleep_secs < @flood_min_sleep
         else
-          sleep_time = @flood_min_sleep
+          sleep_secs = @flood_min_sleep
         end
         
-        sleep(sleep_time)
+        sleep(sleep_secs)
         
         @message_count = 0
       end

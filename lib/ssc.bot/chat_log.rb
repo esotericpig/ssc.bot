@@ -22,7 +22,6 @@
 
 
 require 'attr_bool'
-require 'forwardable'
 require 'set'
 
 require 'ssc.bot/ssc_file'
@@ -45,18 +44,18 @@ module SSCBot
     attr_accessor :file_mode
     attr_reader :file_opt
     attr_accessor :filename
-    attr_accessor :idle_time
+    attr_accessor :idle_secs
     attr_reader :observers
     attr_reader :thread
     
-    def initialize(filename,file_mode: 'rt',file_opt: {},idle_time: 0.250,**parser_kargs)
+    def initialize(filename,file_mode: 'rt',file_opt: {},idle_secs: 0.250,**parser_kargs)
       super()
       
       @alive = false
       @file_mode = file_mode
       @file_opt = file_opt
       @filename = filename
-      @idle_time = idle_time
+      @idle_secs = idle_secs
       @observers = {}
       @parser = MessageParser.new(**parser_kargs)
       @semaphore = Mutex.new()
@@ -228,7 +227,7 @@ module SSCBot
                 notify_observers(message)
               end
               
-              sleep(@idle_time)
+              sleep(@idle_secs)
             end
           end
         end
@@ -239,14 +238,14 @@ module SSCBot
       SSCFile.soft_touch(@filename)
     end
     
-    def stop(wait_time=5)
+    def stop(wait_secs=5)
       @semaphore.synchronize() do
         @alive = false
         
         if !@thread.nil?()
           if @thread.alive?()
             # First, try to kill it gracefully (waiting X secs).
-            @thread.join(@idle_time + wait_time)
+            @thread.join(@idle_secs + wait_secs)
             
             # Die!
             @thread.kill() if @thread.alive?()
