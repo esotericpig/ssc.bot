@@ -218,15 +218,15 @@ class ChatLog
     # @example Default Format
     #   'X Name> Message'
     def parse_player(line,type_name:,match: :default)
-      # Use type_name of :player (not passed in param) for regex_cache.
-      match = match_player(line,type_name: :player) if match == :default
-      
       if match.nil?()
         if @strict
           raise ParseError,"invalid #{type_name} message{#{line}}"
         else
           return nil
         end
+      elsif match == :default
+        # Use type_name of :player (not passed in param) for regex_cache.
+        match = match_player(line,type_name: :player)
       end
       
       name = Util.u_lstrip(match[:name])
