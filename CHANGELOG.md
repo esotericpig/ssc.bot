@@ -8,7 +8,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [[Unreleased]](https://github.com/esotericpig/ssc.bot/compare/v0.1.0...HEAD)
 -
 
-## [v0.1.0] - [YYYY-MM-DD](https://github.com/esotericpig/ssc.bot/tree/v0.1.0)
+## [v0.1.0] - [2020-08-29](https://github.com/esotericpig/ssc.bot/tree/v0.1.0)
 ### Added
 - /
     - .gitignore
