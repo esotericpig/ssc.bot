@@ -33,24 +33,44 @@ class ChatLog
   # @since  0.1.0
   ###
   class Message
+    # Adds +type+ to the list of valid {TYPES}
+    # and creates a boolean method for it ending with a +?+.
+    # 
+    # @param type [Symbol,String] the new type to add
+    def self.add_type(type)
+      type = type.to_sym()
+      
+      return if TYPES.include?(type)
+      
+      TYPES.add(type)
+      
+      name = type.to_s().sub('?','q_')
+      
+      define_method(:"type_#{name}?") do
+        return @type == type
+      end
+    end
+    
     # Valid types of messages.
     # 
     # You can add your own custom type(s) that you parse manually:
-    #   SSCBot::ChatLog::Message::TYPES.add(:custom)
-    TYPES = Set[
-      # In order of F1 Help box.
-      *%i{
-        pub team private remote freq chat
-        ?lines ?namelen ?ignore ?nopubchat ?obscene ?away ?log ?logbuffer
-          ?kill kill ?enter enter ?leave leave ?message ?messages ?chat
-        ?status ?scorereset ?team ?spec ?target ?time ?flags ?score ?crown
-          ?best ?buy
-        ?owner ?password ?usage ?userid ?find ?ping ?packetloss ?lag ?music
-          ?sound ?alarm ?sheep ?getnews
-        ?squadowner ?squad ?squadlist ?loadmacro ?savemacro
-        unknown
-      },
-    ]
+    #   SSCBot::ChatLog::Message.add_type(:custom)
+    TYPES = Set.new()
+    
+    # In order of F1 Help box.
+    %i{
+      pub team private remote freq chat
+      ?lines ?namelen ?ignore ?nopubchat ?obscene ?away ?log ?logbuffer
+        ?kill kill ?enter enter ?leave leave ?message ?messages ?chat
+      ?status ?scorereset ?team ?spec ?target ?time ?flags ?score ?crown
+        ?best ?buy
+      ?owner ?password ?usage ?userid ?find ?ping ?packetloss ?lag ?music
+        ?sound ?alarm ?sheep ?getnews
+      ?squadowner ?squad ?squadlist ?loadmacro ?savemacro
+      unknown
+    }.each() do |type|
+      add_type(type)
+    end
     
     # @param  type [Symbol] the type to check if valid
     # @return [Boolean] +true+ if +type+ is one of {TYPES}, else +false+
