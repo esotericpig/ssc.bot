@@ -66,7 +66,7 @@ module SSCBot
     
     # Universally, is +str+ empty after stripping or +nil+?
     def self.u_blank?(str)
-      return str.nil?() || strip(str).empty?()
+      return str.nil?() || u_strip(str).empty?()
     end
     
     # Universally, left strip +str+'s leading (head) space.
