@@ -86,13 +86,17 @@ $ bundle exec rake install:local
 
 ### Releasing
 
-1. Update *CHANGELOG.md* & *version.rb*
-    - `$ raketary bump -v`
-2. Check for updates
+1. Check for updates
+    - `$ git pull`
     - `$ bundle update`
     - `$ bundle outdated`
-    - `$ git pull`
-3. `$ bundle exec rake release`
+2. Update *CHANGELOG.md* & *version.rb*
+    - `$ raketary bump -v`
+    - `$ bundle update`
+3. Release to *RubyGems*
+    - `$ bundle exec rake release`
+4. Release to *GitHub Packages*
+    - `$ raketary github_pkg`
 
 ## [//](#contents) License
 
