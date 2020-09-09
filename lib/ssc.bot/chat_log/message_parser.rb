@@ -75,42 +75,32 @@ class ChatLog
         @regex_cache[type_name] = cached_regex
       end
       
-      if use_namelen && !@namelen.nil?()
-        regex = cached_regex[@namelen]
+      use_namelen &&= !@namelen.nil?()
+      key = use_namelen ? @namelen : :no_namelen
+      regex = cached_regex[key]
+      
+      if regex.nil?()
+        name_prefix = Util.quote_str_or_regex(name_prefix)
+        name_suffix = Util.quote_str_or_regex(name_suffix)
+        type_prefix = Util.quote_str_or_regex(type_prefix)
         
-        if regex.nil?()
-          name_prefix = Util.quote_str_or_regex(name_prefix)
-          name_suffix = Util.quote_str_or_regex(name_suffix)
-          type_prefix = Util.quote_str_or_regex(type_prefix)
-          
-          # Be careful to not use spaces ' ', but to use '\\ ' (or '\s') instead
-          # because of the '/x' option.
-          regex = /
-            \A#{type_prefix}
-            #{name_prefix}(?<name>.{#{@namelen}})#{name_suffix}
-            (?<message>.*)\z
-          /x
-          
-          cached_regex[@namelen] = regex
+        if use_namelen
+          name = /.{#{@namelen}}/
+        else
+          name = /.*?\S/
         end
-      else
-        regex = cached_regex[:no_namelen]
         
-        if regex.nil?()
-          name_prefix = Util.quote_str_or_regex(name_prefix)
-          name_suffix = Util.quote_str_or_regex(name_suffix)
-          type_prefix = Util.quote_str_or_regex(type_prefix)
-          
-          # Be careful to not use spaces ' ', but to use '\\ ' (or '\s') instead
-          # because of the '/x' option.
-          regex = /
-            \A#{type_prefix}
-            #{name_prefix}(?<name>.*?\S)#{name_suffix}
-            (?<message>.*)\z
-          /x
-          
-          cached_regex[:no_namelen] = regex
-        end
+        name = Util.quote_str_or_regex(name)
+        
+        # Be careful to not use spaces ' ', but to use '\\ ' (or '\s') instead
+        #   because of the '/x' option.
+        regex = /
+          \A#{type_prefix}
+          #{name_prefix}(?<name>#{name})#{name_suffix}
+          (?<message>.*)\z
+        /x
+        
+        cached_regex[key] = regex
       end
       
       return regex.match(line)
@@ -263,7 +253,7 @@ class ChatLog
       cmd = Util.u_strip(player.message).downcase()
       
       if cmd.start_with?('?find')
-        store_command(:pub,%s{?find})
+        store_command(:pub,%s{?find}) # See: match_q_find?()
       end
       
       return PubMessage.new(line,name: player.name,message: player.message)
@@ -353,6 +343,8 @@ class ChatLog
         else
           return nil
         end
+      elsif namelen > MAX_NAMELEN
+        warn("namelen{#{namelen}} > max{#{MAX_NAMELEN}} for ?namelen message{#{line}}",uplevel: 0)
       end
       
       if @autoset_namelen
@@ -367,7 +359,7 @@ class ChatLog
     #   'P :Self.Name:Message'
     #   'P (Name)>Message'
     def parse_remote(line,match:)
-      player = parse_player(line,type_name: 'remote private',match: match)
+      player = parse_player(line,type_name: %s{remote.private},match: match)
       
       return nil if player.nil?()
       
@@ -468,31 +460,20 @@ class ChatLog
       
       if line.start_with?('  Not online, last seen ')
         match = line.match(/(?<more>more) than (?<days>\d+) days ago\z/)
-        
-        if match.nil?()
-          match = line.match(/(?<days>\d+) days? ago\z/)
-        end
-        
-        if match.nil?()
-          match = line.match(/(?<hours>\d+) hours? ago\z/)
-        end
+        match = line.match(/(?<days>\d+) days? ago\z/) if match.nil?()
+        match = line.match(/(?<hours>\d+) hours? ago\z/) if match.nil?()
         
         return match
       else
         match = line.match(/\A  (?<player>.+) is in (?<zone>.+)\z/)
-        
-        if match.nil?()
-          match = line.match(/\A  (?<player>.+) - (?<arena>.+)\z/)
-        end
+        match = line.match(/\A  (?<player>.+) - (?<arena>.+)\z/) if match.nil?()
         
         if match
           caps = match.named_captures
           
           player = caps['player']
           
-          if player.length > MAX_NAMELEN
-            return false
-          end
+          return false if player.length > MAX_NAMELEN
           
           if caps.key?('arena')
             area = caps['arena']
@@ -502,6 +483,8 @@ class ChatLog
             return false
           end
           
+          # If do /\A  (?<player>[^[[:space:]]].+[^[[:space:]])/, then it won't
+          #   capture names/zones/arenas that are only 1 char long, so do this.
           [player[0],player[-1],area[0],area[-1]].each() do |c|
             if c =~ /[[:space:]]/
               return false
@@ -522,10 +505,7 @@ class ChatLog
       return false if line.length < 17
       
       match = /\A  Log file open: (?<filename>.+)\z/.match(line)
-      
-      if match.nil?()
-        match = /\A  Log file closed\z/.match(line)
-      end
+      match = /\A  Log file closed\z/.match(line) if match.nil?()
       
       return match
     end
