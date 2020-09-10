@@ -23,8 +23,10 @@
 
 require 'ssc.bot/chat_log'
 require 'ssc.bot/chat_log_file'
+require 'ssc.bot/clu'
 require 'ssc.bot/error'
 require 'ssc.bot/ssc_file'
+require 'ssc.bot/user'
 require 'ssc.bot/util'
 require 'ssc.bot/version'
 
