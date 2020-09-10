@@ -34,18 +34,8 @@ module SSCBot
   ###
   class AbstractMethodError < Error
     def initialize(msg=nil)
-      if msg.nil?()
-        method_name = caller[1]
-        
-        if !method_name.nil?()
-          index = method_name.rindex('`')
-          
-          if !index.nil?() && (index += 1) < method_name.length
-            method_name = method_name[index..-2]
-            
-            msg = "abstract method{#{method_name}(...)} not implemented"
-          end
-        end
+      if msg.is_a?(Symbol)
+        msg = "abstract method not implemented: #{msg}(...)"
       end
       
       super(msg)

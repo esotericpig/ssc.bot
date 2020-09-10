@@ -69,15 +69,15 @@ module User
     attr_accessor? :staff
     
     def put(message)
-      raise AbstractMethodError
+      raise AbstractMethodError,__method__
     end
     
     def send_message()
-      raise AbstractMethodError
+      raise AbstractMethodError,__method__
     end
     
     def type(message)
-      raise AbstractMethodError
+      raise AbstractMethodError,__method__
     end
     
     def initialize(escape_percent: false,escape_space: true,escape_str: DEFAULT_ESCAPE_STR,flood_count: DEFAULT_FLOOD_COUNT,flood_min_sleep: DEFAULT_FLOOD_MIN_SLEEP,flood_secs: DEFAULT_FLOOD_SECS,staff: false)
