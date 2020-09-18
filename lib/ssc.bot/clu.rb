@@ -35,6 +35,7 @@ module SSCBot
   # @since  0.1.2
   ###
   class Clu
+    attr_reader :bots
     attr_reader :chat_log
     attr_reader :msg_sender
     
@@ -43,11 +44,24 @@ module SSCBot
       
       super()
       
+      @bots = {}
       @chat_log = chat_log
       @msg_sender = msg_sender
       
-      def_delegators(:@chat_log,*(@chat_log.methods - methods))
-      def_delegators(:@msg_sender,*(@msg_sender.methods - methods))
+      def_delegators(:@chat_log,*(@chat_log.public_methods - public_methods))
+      def_delegators(:@msg_sender,*(@msg_sender.public_methods - public_methods))
+    end
+    
+    def add_bot(bot_class)
+      cluid = bot_class.const_get(:CLUID)
+      bot = @bots[cluid]
+      
+      if bot.nil?()
+        bot = bot_class.new(self)
+        @bots[cluid] = bot
+      end
+      
+      return bot
     end
   end
 end
