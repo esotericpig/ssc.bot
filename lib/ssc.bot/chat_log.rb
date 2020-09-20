@@ -273,9 +273,9 @@ module SSCBot
         @object = object
       end
       
-      def notify(chatlog,message)
+      def notify(chat_log,message)
         @funcs.each() do |func|
-          @object.__send__(func,chatlog,message)
+          @object.__send__(func,chat_log,message)
         end
       end
     end
