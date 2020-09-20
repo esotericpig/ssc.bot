@@ -53,7 +53,7 @@ module SSCBot
     end
     
     def add_bot(bot_class)
-      cluid = bot_class.const_get(:CLUID)
+      cluid = bot_class.const_get(:CLUID).to_sym()
       bot = @bots[cluid]
       
       if bot.nil?()
@@ -62,6 +62,14 @@ module SSCBot
       end
       
       return bot
+    end
+    
+    def [](cluid)
+      return @bots[cluid.to_sym()]
+    end
+    
+    def bot?(cluid)
+      return @bots.key?(cluid.to_sym())
     end
   end
 end
