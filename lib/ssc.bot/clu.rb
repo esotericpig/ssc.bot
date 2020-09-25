@@ -52,24 +52,15 @@ module SSCBot
       def_delegators(:@msg_sender,*(@msg_sender.public_methods - public_methods))
     end
     
-    def add_bot(bot_class)
-      cluid = bot_class.const_get(:CLUID).to_sym()
-      bot = @bots[cluid]
+    def fetch_bot(bot_class)
+      bot = @bots[bot_class]
       
       if bot.nil?()
         bot = bot_class.new(self)
-        @bots[cluid] = bot
+        @bots[bot_class] = bot
       end
       
       return bot
-    end
-    
-    def [](cluid)
-      return @bots[cluid.to_sym()]
-    end
-    
-    def bot?(cluid)
-      return @bots.key?(cluid.to_sym())
     end
   end
 end
