@@ -29,16 +29,15 @@ end
 
 require 'ssc.bot/user/jrobot_message_sender'
 
-
 module SSCBot
   ###
   # Require this file to include all JRuby (Java-related) files.
   # Must be using JRuby.
-  #   require 'ssc.bot/java'
+  #   require 'ssc.bot/jruby'
   # 
   # @author Jonathan Bradley Whited (@esotericpig)
   # @since  0.1.2
   ###
-  module Java
+  module JRuby
   end
 end
