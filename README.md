@@ -12,48 +12,13 @@ It's currently in development and only offers limited functionality.
 
 ## Contents
 
-- [Setup](#-setup)
 - [Using](#-using)
 - [Hacking](#-hacking)
 - [License](#-license)
 
-## [//](#contents) Setup
-
-Pick your poison...
-
-In your Gemspec (*&lt;project&gt;*.gemspec):
-
-```Ruby
-  # Pick one...
-  spec.add_runtime_dependency 'ssc.bot', '~> X.X'
-  spec.add_development_dependency 'ssc.bot', '~> X.X'
-```
-
-In your Gemfile:
-
-```Ruby
-  # Pick one...
-  gem 'ssc.bot', '~> X.X'
-  gem 'ssc.bot', '~> X.X', group: :development
-  gem 'ssc.bot', git: 'https://github.com/esotericpig/ssc.bot.git', tag: 'vX.X.X'
-```
-
-With the RubyGems package manager:
-
-```
-  $ gem install ssc.bot
-```
-
-Manually:
-
-```
-  $ git clone 'https://github.com/esotericpig/ssc.bot.git'
-  $ cd ssc.bot
-  $ bundle install
-  $ bundle exec rake install:local
-```
-
 ## [//](#contents) Using
+
+Gem name: `ssc.bot`
 
 TODO: readme.using
 
@@ -95,7 +60,8 @@ $ bundle exec rake install:local
     - `$ bundle update`
 3. Release to *RubyGems*
     - `$ bundle exec rake release`
-4. Release to *GitHub Packages*
+4. Update GitHub release title & description
+5. Release to *GitHub Packages*
     - `$ raketary github_pkg`
 
 ## [//](#contents) License
