@@ -26,7 +26,6 @@ require 'forwardable'
 require 'ssc.bot/chat_log'
 require 'ssc.bot/user'
 
-
 module SSCBot
   ###
   # Chat Log + User
@@ -48,11 +47,13 @@ module SSCBot
       @chat_log = chat_log
       @msg_sender = msg_sender
       
+      def_delegators(:@bots,:[])
+      def_delegator(:@bots,:key?,:bot?)
       def_delegators(:@chat_log,*(@chat_log.public_methods - public_methods))
       def_delegators(:@msg_sender,*(@msg_sender.public_methods - public_methods))
     end
     
-    def fetch_bot(bot_class)
+    def add_bot(bot_class)
       bot = @bots[bot_class]
       
       if bot.nil?()
