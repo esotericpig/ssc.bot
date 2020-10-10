@@ -23,7 +23,6 @@
 
 require 'ssc.bot/user/message_sender'
 
-
 module SSCBot
   ###
   # @author Jonathan Bradley Whited (@esotericpig)
