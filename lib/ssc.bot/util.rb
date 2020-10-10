@@ -23,7 +23,6 @@
 
 require 'rbconfig'
 
-
 module SSCBot
   ###
   # Your typical utility methods that
@@ -53,7 +52,6 @@ module SSCBot
       
       return os
     end
-    
     OS = os()
     
     def self.quote_str_or_regex(value)
@@ -63,6 +61,26 @@ module SSCBot
         return Regexp.quote(value)
       end
     end
+    
+    def self.ruby_engine()
+      engines = [
+        defined?(::RUBY_ENGINE) ? ::RUBY_ENGINE : nil,
+        RbConfig::CONFIG['ruby_install_name'],
+        RbConfig::CONFIG['rubyw_install_name'],
+        RbConfig::CONFIG['RUBY_INSTALL_NAME'],
+        RbConfig::CONFIG['RUBYW_INSTALL_NAME'],
+        RbConfig.ruby,
+      ].join('|').downcase()
+      
+      if engines.include?('jruby')
+        return :jruby
+      elsif engines.include?('truffleruby')
+        return :truffleruby
+      end
+      
+      return :ruby
+    end
+    RUBY_ENGINE = ruby_engine()
     
     # Universally, is +str+ empty after stripping or +nil+?
     def self.u_blank?(str)
