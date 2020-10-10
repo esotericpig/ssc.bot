@@ -30,7 +30,6 @@ require 'ssc.bot/util'
 require 'ssc.bot/chat_log/message'
 require 'ssc.bot/chat_log/messages'
 
-
 module SSCBot
 class ChatLog
   ###

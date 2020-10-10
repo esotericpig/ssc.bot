@@ -22,12 +22,12 @@
 
 require 'bundler/gem_tasks'
 
-require 'rake/clean'
-require 'rake/testtask'
 require 'yard'
 
-require 'ssc.bot/version'
+require 'rake/clean'
+require 'rake/testtask'
 
+require 'ssc.bot/version'
 
 CLEAN.exclude('{.git,stock}/**/*')
 CLOBBER.include('doc/')

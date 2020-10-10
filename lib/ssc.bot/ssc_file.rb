@@ -23,7 +23,6 @@
 
 require 'ssc.bot/util'
 
-
 module SSCBot
   ###
   # @author Jonathan Bradley Whited (@esotericpig)

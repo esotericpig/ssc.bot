@@ -27,7 +27,6 @@ require 'time'
 require 'ssc.bot/error'
 require 'ssc.bot/util'
 
-
 module SSCBot
 module User
   ###

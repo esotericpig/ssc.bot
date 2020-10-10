@@ -23,7 +23,6 @@
 
 require 'set'
 
-
 module SSCBot
 class ChatLog
   ###

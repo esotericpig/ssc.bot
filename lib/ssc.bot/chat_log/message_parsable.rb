@@ -25,7 +25,6 @@ require 'forwardable'
 
 require 'ssc.bot/chat_log/message_parser'
 
-
 module SSCBot
 class ChatLog
   ###

@@ -28,7 +28,6 @@ require 'ssc.bot/chat_log/message_parsable'
 require 'ssc.bot/chat_log/message_parser'
 require 'ssc.bot/chat_log/messages'
 
-
 module SSCBot
   ###
   # @author Jonathan Bradley Whited (@esotericpig)
