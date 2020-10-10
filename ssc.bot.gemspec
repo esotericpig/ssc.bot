@@ -20,11 +20,7 @@
 #++
 
 
-lib = File.expand_path(File.join('..','lib'),__FILE__)
-$LOAD_PATH.unshift(lib) unless $LOAD_PATH.include?(lib)
-
-require 'ssc.bot/version'
-
+require_relative 'lib/ssc.bot/version'
 
 Gem::Specification.new() do |spec|
   spec.name        = 'ssc.bot'
@@ -37,14 +33,15 @@ Gem::Specification.new() do |spec|
   spec.description = spec.summary
   
   spec.metadata = {
-    'bug_tracker_uri' => 'https://github.com/esotericpig/ssc.bot/issues',
-    'changelog_uri'   => 'https://github.com/esotericpig/ssc.bot/blob/master/CHANGELOG.md',
     'homepage_uri'    => 'https://github.com/esotericpig/ssc.bot',
     'source_code_uri' => 'https://github.com/esotericpig/ssc.bot',
+    'bug_tracker_uri' => 'https://github.com/esotericpig/ssc.bot/issues',
+    'changelog_uri'   => 'https://github.com/esotericpig/ssc.bot/blob/master/CHANGELOG.md',
   }
   
-  spec.require_paths = ['lib']
-  spec.bindir        = 'bin'
+  spec.required_ruby_version = '>= 2.5'
+  spec.require_paths         = ['lib']
+  spec.bindir                = 'bin'
   
   spec.files = [
     Dir.glob(File.join("{#{spec.require_paths.join(',')}}",'**','*.{erb,rb}')),
@@ -53,8 +50,6 @@ Gem::Specification.new() do |spec|
     %W( Gemfile #{spec.name}.gemspec Rakefile ),
     %w( CHANGELOG.md LICENSE.txt README.md ),
   ].flatten()
-  
-  spec.required_ruby_version = '>= 2.5'
   
   spec.add_runtime_dependency 'attr_bool','~> 0.1'   # attr_accessor?/reader?
   
