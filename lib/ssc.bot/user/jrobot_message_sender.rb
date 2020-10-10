@@ -24,7 +24,7 @@
 begin
   require 'java'
 rescue LoadError => e
-  raise e.exception('Must use JRuby for JRobotMessageSender')
+  raise e.exception('Must use JRuby for SSCBot::User::JRobotMessageSender')
 end
 
 require 'attr_bool'
@@ -41,7 +41,6 @@ java_import 'java.awt.datatransfer.ClipboardOwner'
 java_import 'java.awt.datatransfer.StringSelection'
 
 java_import 'java.awt.event.KeyEvent'
-
 
 module SSCBot
 module User
