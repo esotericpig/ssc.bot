@@ -34,13 +34,13 @@ module SSCBot
   # @since  0.1.2
   ###
   class Clu
+    include Forwardable
+    
     attr_reader :bots
     attr_reader :chat_log
     attr_reader :msg_sender
     
     def initialize(chat_log,msg_sender)
-      extend Forwardable
-      
       super()
       
       @bots = {}
