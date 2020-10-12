@@ -36,26 +36,15 @@ class ChatLog
     
     MAX_NAMELEN = MessageParser::MAX_NAMELEN
     
-    def_delegators(:@parser,
-      :autoset_namelen?,:autoset_namelen=,
-      :check_history_count,:check_history_count=,
-      :commands,
-      :messages,
-      :namelen,:namelen=,
-      :regex_cache,
-      :store_history?,:store_history=,
-      :strict?,:strict=,
-      
-      :parse,
-      
-      :clear_history,
-      :reset_namelen,
-      :store_command,
-      
-      :command?,
-    )
-    
     attr_reader :parser
+    
+    (MessageParser.public_instance_methods - Class.public_instance_methods).each() do |method|
+      name = method.to_s()
+      
+      next if name.start_with?('match_') || name.start_with?('parse_')
+      
+      def_delegator(:@parser,method)
+    end
   end
 end
 end
