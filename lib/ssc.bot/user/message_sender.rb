@@ -57,6 +57,16 @@ module User
     MM_REDBOUNTY = '%redbounty'
     MM_REDFLAGS = '%redflags'
     
+    constants.each() do |constant|
+      name = constant.to_s()
+      
+      next unless name.start_with?('MM_')
+      
+      define_method(name.downcase().to_sym()) do
+        return self.class.const_get(constant)
+      end
+    end
+    
     attr_accessor? :escape_percent
     attr_accessor? :escape_space
     attr_accessor :escape_str
@@ -311,66 +321,6 @@ module User
     
     def send_team2(message)
       send_safe("'#{message}")
-    end
-    
-    def mm_tickname()
-      return MM_TICKNAME
-    end
-    
-    def mm_selfname()
-      return MM_SELFNAME
-    end
-    
-    def mm_squad()
-      return MM_SQUAD
-    end
-    
-    def mm_freq()
-      return MM_FREQ
-    end
-    
-    def mm_bounty()
-      return MM_BOUNTY
-    end
-    
-    def mm_flags()
-      return MM_FLAGS
-    end
-    
-    def mm_energy()
-      return MM_ENERGY
-    end
-    
-    def mm_killer()
-      return MM_KILLER
-    end
-    
-    def mm_killed()
-      return MM_KILLED
-    end
-    
-    def mm_coord()
-      return MM_COORD
-    end
-    
-    def mm_area()
-      return MM_AREA
-    end
-    
-    def mm_red()
-      return MM_RED
-    end
-    
-    def mm_redname()
-      return MM_REDNAME
-    end
-    
-    def mm_redbounty()
-      return MM_REDBOUNTY
-    end
-    
-    def mm_redflags()
-      return MM_REDFLAGS
     end
   end
 end
