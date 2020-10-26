@@ -47,17 +47,17 @@ Gem::Specification.new() do |spec|
     Dir.glob(File.join("{#{spec.require_paths.join(',')}}",'**','*.{erb,rb}')),
     Dir.glob(File.join(spec.bindir,'*')),
     Dir.glob(File.join('{test,yard}','**','*.{erb,rb}')),
-    %W( Gemfile #{spec.name}.gemspec Rakefile ),
-    %w( CHANGELOG.md LICENSE.txt README.md ),
+    %W[ Gemfile #{spec.name}.gemspec Rakefile .yardopts ],
+    %w[ CHANGELOG.md LICENSE.txt README.md ],
   ].flatten()
   
-  spec.add_runtime_dependency 'attr_bool','~> 0.1'   # attr_accessor?/reader?
+  spec.add_runtime_dependency 'attr_bool','~> 0.2'   # attr_accessor?/reader?
   
   spec.add_development_dependency 'bundler'   ,'~> 2.1'
   spec.add_development_dependency 'minitest'  ,'~> 5.14'
   spec.add_development_dependency 'rake'      ,'~> 13.0'
   spec.add_development_dependency 'rdoc'      ,'~> 6.2'   # YARDoc RDoc (*.rb)
   spec.add_development_dependency 'redcarpet' ,'~> 3.5'   # YARDoc Markdown (*.md)
-  spec.add_development_dependency 'yard'      ,'~> 0.9'   # Documentation
+  spec.add_development_dependency 'yard'      ,'~> 0.9'   # Doc
   spec.add_development_dependency 'yard_ghurt','~> 1.2'   # YARDoc GitHub Rake tasks
 end

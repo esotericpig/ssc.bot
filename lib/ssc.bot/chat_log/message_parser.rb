@@ -37,6 +37,8 @@ class ChatLog
   # @since  0.1.0
   ###
   class MessageParser
+    extend AttrBool::Ext
+    
     MAX_NAMELEN = 24
     
     attr_accessor? :autoset_namelen

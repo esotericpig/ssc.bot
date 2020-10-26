@@ -37,6 +37,7 @@ module SSCBot
   # @since  0.1.0
   ###
   class ChatLog
+    extend AttrBool::Ext
     include MessageParsable
     
     attr_reader? :alive

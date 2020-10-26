@@ -21,6 +21,7 @@
 #++
 
 
+require 'attr_bool'
 require 'set'
 
 module SSCBot
@@ -32,6 +33,8 @@ class ChatLog
   # @since  0.1.0
   ###
   class Message
+    extend AttrBool::Ext
+    
     # Adds +type+ to the list of valid {TYPES}
     # and creates a boolean method for it ending with a +?+.
     # 

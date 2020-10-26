@@ -34,6 +34,8 @@ module User
   # @since  0.1.0
   ###
   class MessageSender
+    extend AttrBool::Ext
+    
     DEFAULT_ESCAPE_STR = '.'
     DEFAULT_FLOOD_COUNT = 8
     DEFAULT_FLOOD_MIN_SLEEP = 0.001
