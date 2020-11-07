@@ -24,8 +24,7 @@
 require 'attr_bool'
 require 'set'
 
-module SSCBot
-class ChatLog
+module SSCBot; class ChatLog
   ###
   # The base class of all parsed messages from a chat log file.
   # 
@@ -104,5 +103,4 @@ class ChatLog
       return @type == type.to_sym()
     end
   end
-end
-end
+end; end

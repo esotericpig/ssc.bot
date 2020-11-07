@@ -25,8 +25,7 @@ require 'forwardable'
 
 require 'ssc.bot/chat_log/message_parser'
 
-module SSCBot
-class ChatLog
+module SSCBot; class ChatLog
   ###
   # @author Jonathan Bradley Whited (@esotericpig)
   # @since  0.1.0
@@ -46,5 +45,4 @@ class ChatLog
       def_delegator(:@parser,method)
     end
   end
-end
-end
+end; end

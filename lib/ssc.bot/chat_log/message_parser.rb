@@ -30,8 +30,7 @@ require 'ssc.bot/util'
 require 'ssc.bot/chat_log/message'
 require 'ssc.bot/chat_log/messages'
 
-module SSCBot
-class ChatLog
+module SSCBot; class ChatLog
   ###
   # @author Jonathan Bradley Whited (@esotericpig)
   # @since  0.1.0
@@ -539,5 +538,4 @@ class ChatLog
       return false
     end
   end
-end
-end
+end; end

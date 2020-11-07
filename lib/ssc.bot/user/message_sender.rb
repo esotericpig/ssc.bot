@@ -27,8 +27,7 @@ require 'time'
 require 'ssc.bot/error'
 require 'ssc.bot/util'
 
-module SSCBot
-module User
+module SSCBot; module User
   ###
   # @author Jonathan Bradley Whited (@esotericpig)
   # @since  0.1.0
@@ -325,5 +324,4 @@ module User
       send_safe("'#{message}")
     end
   end
-end
-end
+end; end
