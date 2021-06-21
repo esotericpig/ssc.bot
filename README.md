@@ -20,6 +20,8 @@ It's currently in development and only offers limited functionality.
 
 Gem name: `ssc.bot`
 
+See [SSC.Nob](https://github.com/esotericpig/ssc.nob) for example usage.
+
 TODO: readme.using
 
 ## [//](#contents) Hacking
@@ -57,19 +59,22 @@ $ bundle exec rake install:local
     - `$ bundle outdated`
 2. Update *CHANGELOG.md* & *version.rb*
     - `$ raketary bump -v`
+    - `$ raketary bump --patch`
     - `$ bundle update`
-3. Release to *RubyGems*
-    - `$ bundle exec rake release`
-4. Update GitHub release title & description
-5. Release to *GitHub Packages*
+3. Release to *GitHub* & *GitHub Packages*
+    - `$ bundle exec rake clobber build`
+    - `$ gh release create v0.0.0 pkg/*.gem`
+    - `$ git fetch --tags origin`
     - `$ raketary github_pkg`
+4. Release to *RubyGems*
+    - `$ bundle exec rake release`
 
 ## [//](#contents) License
 
 [GNU LGPL v3+](LICENSE.txt)
 
 > SSC.Bot (<https://github.com/esotericpig/ssc.bot>)  
-> Copyright (c) 2020 Jonathan Bradley Whited (@esotericpig)  
+> Copyright (c) 2020-2021 Jonathan Bradley Whited  
 > 
 > SSC.Bot is free software: you can redistribute it and/or modify  
 > it under the terms of the GNU Lesser General Public License as published by  
