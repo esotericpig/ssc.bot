@@ -4,20 +4,9 @@
 
 #--
 # This file is part of SSC.Bot.
-# Copyright (c) 2020 Jonathan Bradley Whited (@esotericpig)
-# 
-# SSC.Bot is free software: you can redistribute it and/or modify
-# it under the terms of the GNU Lesser General Public License as published by
-# the Free Software Foundation, either version 3 of the License, or
-# (at your option) any later version.
-# 
-# SSC.Bot is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-# GNU Lesser General Public License for more details.
-# 
-# You should have received a copy of the GNU Lesser General Public License
-# along with SSC.Bot.  If not, see <https://www.gnu.org/licenses/>.
+# Copyright (c) 2020-2021 Jonathan Bradley Whited
+#
+# SPDX-License-Identifier: LGPL-3.0-or-later
 #++
 
 
@@ -27,14 +16,14 @@ module SSCBot
   ###
   # Your typical utility methods that
   # should be moved into a separate Gem one day...
-  # 
-  # @author Jonathan Bradley Whited (@esotericpig)
+  #
+  # @author Jonathan Bradley Whited
   # @since  0.1.0
   ###
   module Util
     def self.os(host_os=RbConfig::CONFIG['host_os'])
       os = :unknown
-      
+
       case host_os
       when /darwin/i
         os = :macos
@@ -49,11 +38,11 @@ module SSCBot
           os = :windows
         end
       end
-      
+
       return os
     end
     OS = os()
-    
+
     def self.quote_str_or_regex(value)
       if value.respond_to?(:source)
         return value.source.gsub(' ','\\ ') # For //x
@@ -61,7 +50,7 @@ module SSCBot
         return Regexp.quote(value)
       end
     end
-    
+
     def self.ruby_engine()
       engines = [
         defined?(::RUBY_ENGINE) ? ::RUBY_ENGINE : nil,
@@ -71,34 +60,34 @@ module SSCBot
         RbConfig::CONFIG['RUBYW_INSTALL_NAME'],
         RbConfig.ruby,
       ].join('|').downcase()
-      
+
       if engines.include?('jruby')
         return :jruby
       elsif engines.include?('truffleruby')
         return :truffleruby
       end
-      
+
       return :ruby
     end
     RUBY_ENGINE = ruby_engine()
-    
+
     # Universally, is +str+ empty after stripping or +nil+?
     def self.u_blank?(str)
       return str.nil?() || str.empty?() || u_strip(str).empty?()
     end
-    
+
     # Universally, left strip +str+'s leading (head) space.
     def self.u_lstrip(str)
       return nil if str.nil?()
       return str.gsub(/\A[[:space:]]+/,'')
     end
-    
+
     # Universally, right strip +str+'s trailing (tail) space.
     def self.u_rstrip(str)
       return nil if str.nil?()
       return str.gsub(/[[:space:]]+\z/,'')
     end
-    
+
     # Universally, strip +str+'s space.
     def self.u_strip(str)
       return nil if str.nil?()

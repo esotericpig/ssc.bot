@@ -4,20 +4,9 @@
 
 #--
 # This file is part of SSC.Bot.
-# Copyright (c) 2020 Jonathan Bradley Whited (@esotericpig)
-# 
-# SSC.Bot is free software: you can redistribute it and/or modify
-# it under the terms of the GNU Lesser General Public License as published by
-# the Free Software Foundation, either version 3 of the License, or
-# (at your option) any later version.
-# 
-# SSC.Bot is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-# GNU Lesser General Public License for more details.
-# 
-# You should have received a copy of the GNU Lesser General Public License
-# along with SSC.Bot.  If not, see <https://www.gnu.org/licenses/>.
+# Copyright (c) 2020-2021 Jonathan Bradley Whited
+#
+# SPDX-License-Identifier: LGPL-3.0-or-later
 #++
 
 
@@ -44,7 +33,7 @@ java_import 'java.awt.event.KeyEvent'
 
 module SSCBot; module User
   ###
-  # @author Jonathan Bradley Whited (@esotericpig)
+  # @author Jonathan Bradley Whited
   # @since  0.1.0
   ###
   class JRobotMessageSender < MessageSender
@@ -58,10 +47,10 @@ module SSCBot; module User
     attr_accessor? :warn_user
     attr_accessor :warn_user_key
     attr_accessor :warn_user_sleep
-    
+
     def initialize(auto_delay: 110,msg_key: nil,os: Util::OS,warn_user: false,warn_user_key: KeyEvent::VK_BACK_SPACE,warn_user_sleep: 0.747,**kargs)
       super(**kargs)
-      
+
       @clipboard = Toolkit.getDefaultToolkit().getSystemClipboard()
       @msg_key = msg_key
       @os = os
@@ -69,9 +58,9 @@ module SSCBot; module User
       @warn_user = warn_user
       @warn_user_key = warn_user_key
       @warn_user_sleep = warn_user_sleep
-      
+
       @robot.setAutoDelay(auto_delay)
-      
+
       @shortcut_paste = ->(ms) do
         if ms.os == :macos
           @shortcut_paste_macos.call(ms)
@@ -82,37 +71,37 @@ module SSCBot; module User
       @shortcut_paste_default = ->(ms) { ms.roll_keys(KeyEvent::VK_CONTROL,KeyEvent::VK_V) }
       @shortcut_paste_macos = ->(ms) { ms.roll_keys(KeyEvent::VK_META,KeyEvent::VK_V) }
     end
-    
+
     def backspace()
       return type_key(KeyEvent::VK_BACK_SPACE)
     end
-    
+
     def copy(str)
       @clipboard.setContents(StringSelection.new(str),nil)
-      
+
       return self
     end
-    
+
     def enter()
       return type_key(KeyEvent::VK_ENTER)
     end
-    
+
     def paste(str=nil)
       copy(str) unless str.nil?()
-      
+
       @shortcut_paste.call(self)
-      
+
       return self
     end
-    
+
     def press_key(*key_codes)
       key_codes.each() do |key_code|
         @robot.keyPress(key_code)
       end
-      
+
       return self
     end
-    
+
     def put(message)
       # If do type_msg_key() and then warn_user(), then a backspace from
       #   warn_user() will cancel out the msg key.
@@ -123,45 +112,45 @@ module SSCBot; module User
              type_msg_key().
              paste(message)
     end
-    
+
     def release_key(*key_codes)
       key_codes.each() do |key_code|
         @robot.keyRelease(key_code)
       end
-      
+
       return self
     end
-    
+
     def roll_keys(*key_codes)
       key_codes.each() do |key_code|
         @robot.keyPress(key_code)
       end
-      
+
       (key_codes.length - 1).downto(0) do |i|
         @robot.keyRelease(key_codes[i])
       end
-      
+
       return self
     end
-    
+
     def send_message()
       enter()
     end
-    
+
     def type(message)
       # TODO: implement type(message)
       super(message)
     end
-    
+
     def type_key(*key_codes)
       key_codes.each() do |key_code|
         @robot.keyPress(key_code)
         @robot.keyRelease(key_code)
       end
-      
+
       return self
     end
-    
+
     def type_msg_key()
       if @msg_key
         if @msg_key.respond_to?(:call)
@@ -170,10 +159,10 @@ module SSCBot; module User
           type_key(@msg_key)
         end
       end
-      
+
       return self
     end
-    
+
     def warn_user()
       if @warn_user
         if @warn_user_key.respond_to?(:call)
@@ -184,7 +173,7 @@ module SSCBot; module User
           release_key(@warn_user_key)
         end
       end
-      
+
       return self
     end
   end
