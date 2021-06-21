@@ -1,4 +1,3 @@
-#!/usr/bin/env ruby
 # encoding: UTF-8
 # frozen_string_literal: true
 
@@ -45,7 +44,7 @@ module SSCBot
     def add_bot(bot_class)
       bot = @bots[bot_class]
 
-      if bot.nil?()
+      if bot.nil?
         bot = bot_class.new(self)
         @bots[bot_class] = bot
       end

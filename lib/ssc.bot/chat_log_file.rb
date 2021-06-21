@@ -1,4 +1,3 @@
-#!/usr/bin/env ruby
 # encoding: UTF-8
 # frozen_string_literal: true
 
@@ -25,16 +24,16 @@ module SSCBot
   class ChatLogFile < SSCFile
     include ChatLog::MessageParsable
 
-    def initialize(filename,mode=DEFAULT_MODE,parser: ChatLog::MessageParser.new(),**file_kargs)
+    def initialize(filename,mode=DEFAULT_MODE,parser: ChatLog::MessageParser.new,**file_kargs)
       super(filename,mode,**file_kargs)
 
       @parser = parser
     end
 
-    def parse_line()
-      line = get_line()
+    def parse_line
+      line = read_uline
 
-      return line.nil?() ? nil : parse(line)
+      return line.nil? ? nil : parse(line)
     end
   end
 end

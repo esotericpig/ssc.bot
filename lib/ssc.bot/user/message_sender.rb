@@ -1,4 +1,3 @@
-#!/usr/bin/env ruby
 # encoding: UTF-8
 # frozen_string_literal: true
 
@@ -16,7 +15,8 @@ require 'time'
 require 'ssc.bot/error'
 require 'ssc.bot/util'
 
-module SSCBot; module User
+module SSCBot
+module User
   ###
   # @author Jonathan Bradley Whited
   # @since  0.1.0
@@ -47,12 +47,12 @@ module SSCBot; module User
     MM_REDBOUNTY = '%redbounty'
     MM_REDFLAGS = '%redflags'
 
-    constants.each() do |constant|
-      name = constant.to_s()
+    constants.each do |constant|
+      name = constant.to_s
 
       next unless name.start_with?('MM_')
 
-      define_method(name.downcase().to_sym()) do
+      define_method(name.downcase.to_sym) do
         return self.class.const_get(constant)
       end
     end
@@ -71,7 +71,7 @@ module SSCBot; module User
       raise AbstractMethodError,__method__
     end
 
-    def send_message()
+    def send_message
       raise AbstractMethodError,__method__
     end
 
@@ -79,7 +79,9 @@ module SSCBot; module User
       raise AbstractMethodError,__method__
     end
 
-    def initialize(escape_percent: false,escape_space: true,escape_str: DEFAULT_ESCAPE_STR,flood_count: DEFAULT_FLOOD_COUNT,flood_min_sleep: DEFAULT_FLOOD_MIN_SLEEP,flood_secs: DEFAULT_FLOOD_SECS,staff: false)
+    def initialize(escape_percent: false,escape_space: true,escape_str: DEFAULT_ESCAPE_STR,
+                   flood_count: DEFAULT_FLOOD_COUNT,flood_min_sleep: DEFAULT_FLOOD_MIN_SLEEP,
+                   flood_secs: DEFAULT_FLOOD_SECS,staff: false)
       super()
 
       @escape_percent = escape_percent
@@ -89,11 +91,12 @@ module SSCBot; module User
       @flood_min_sleep = flood_min_sleep
       @flood_secs = flood_secs
       @message_count = 0
-      @message_time = Time.now()
+      @message_time = Time.now
       @staff = staff
     end
 
-    def escape_pub(message,escape_percent: @escape_percent,escape_space: @escape_space,escape_str: @escape_str,staff: @staff)
+    def escape_pub(message,escape_percent: @escape_percent,escape_space: @escape_space,
+                   escape_str: @escape_str,staff: @staff)
       if escape_percent
         message = message.gsub('%','%%')
       end
@@ -114,7 +117,7 @@ module SSCBot; module User
             if stripped_message.index(':',1)
               escape = true
             end
-          when '/',%q{'},'"',';','='
+          when '/',"'",'"',';','='
             escape = true
           when '?'
             if stripped_message[1] =~ /[[:alpha:]]/
@@ -133,11 +136,11 @@ module SSCBot; module User
       return message
     end
 
-    def prevent_flood()
+    def prevent_flood
       @message_count += 1
 
       if @message_count >= @flood_count
-        diff_time = Time.now() - @message_time
+        diff_time = Time.now - @message_time
 
         if diff_time <= @flood_secs
           sleep_secs = (@flood_secs - diff_time).round(4) + 0.001
@@ -151,7 +154,7 @@ module SSCBot; module User
         @message_count = 0
       end
 
-      @message_time = Time.now()
+      @message_time = Time.now
     end
 
     def put_or_type(message)
@@ -160,7 +163,7 @@ module SSCBot; module User
 
     def send(message)
       put(message)
-      send_message()
+      send_message
     end
 
     def send_or_types(message)
@@ -169,22 +172,22 @@ module SSCBot; module User
 
     def send_or_types_safe(message)
       send_or_types(message)
-      prevent_flood()
+      prevent_flood
     end
 
     def send_safe(message)
       send(message)
-      prevent_flood()
+      prevent_flood
     end
 
     def types(message)
       type(message)
-      send_message()
+      send_message
     end
 
     def types_safe(message)
       types(message)
-      prevent_flood()
+      prevent_flood
     end
 
     def send_chat(message)
@@ -196,7 +199,7 @@ module SSCBot; module User
     end
 
     def send_freq(message)
-      send_safe(%Q{"#{message}})
+      send_safe(%Q("#{message}))
     end
 
     def send_freq_eq(freq)
@@ -225,7 +228,7 @@ module SSCBot; module User
       send_safe(escape_pub(message,**kargs))
     end
 
-    def send_q_chat()
+    def send_q_chat
       send_safe('?chat')
     end
 
@@ -233,7 +236,7 @@ module SSCBot; module User
       send_safe("?chat=#{names.join(',')}")
     end
 
-    def send_q_enter()
+    def send_q_enter
       send_safe('?enter')
     end
 
@@ -241,11 +244,11 @@ module SSCBot; module User
       send_safe("?find #{player}")
     end
 
-    def send_q_kill()
+    def send_q_kill
       send_safe('?kill')
     end
 
-    def send_q_leave()
+    def send_q_leave
       send_safe('?leave')
     end
 
@@ -253,7 +256,7 @@ module SSCBot; module User
       send_safe("?loadmacro #{filename}")
     end
 
-    def send_q_log()
+    def send_q_log
       send_safe('?log')
     end
 
@@ -261,7 +264,7 @@ module SSCBot; module User
       send_safe("?log #{filename}")
     end
 
-    def send_q_logbuffer()
+    def send_q_logbuffer
       send_safe('?logbuffer')
     end
 
@@ -269,7 +272,7 @@ module SSCBot; module User
       send_safe("?logbuffer #{filename}")
     end
 
-    def send_q_namelen()
+    def send_q_namelen
       send_safe('?namelen')
     end
 
@@ -277,7 +280,7 @@ module SSCBot; module User
       send_safe("?namelen=#{namelen}")
     end
 
-    def send_q_lines()
+    def send_q_lines
       send_safe('?lines')
     end
 
@@ -289,11 +292,11 @@ module SSCBot; module User
       send_safe("?savemacro #{filename}")
     end
 
-    def send_q_spec()
+    def send_q_spec
       send_safe('?spec')
     end
 
-    def send_q_team()
+    def send_q_team
       send_safe('?team')
     end
 
@@ -313,4 +316,5 @@ module SSCBot; module User
       send_safe("'#{message}")
     end
   end
-end; end
+end
+end

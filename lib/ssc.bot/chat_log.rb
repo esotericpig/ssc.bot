@@ -1,4 +1,3 @@
-#!/usr/bin/env ruby
 # encoding: UTF-8
 # frozen_string_literal: true
 
@@ -47,12 +46,12 @@ module SSCBot
       @idle_secs = idle_secs
       @observers = {}
       @parser = MessageParser.new(**parser_kargs)
-      @semaphore = Mutex.new()
+      @semaphore = Mutex.new
       @thread = nil
     end
 
     def add_observer(observer=nil,*funcs,type: :any,&block)
-      if observer.nil?() && block.nil?()
+      if observer.nil? && block.nil?
         raise ArgumentError,'no observer'
       end
 
@@ -60,19 +59,19 @@ module SSCBot
 
       type_observers = fetch_observers(type: type)
 
-      if !observer.nil?()
-        funcs << :call if funcs.empty?()
+      if !observer.nil?
+        funcs << :call if funcs.empty?
 
         type_observers << Observer.new(observer,*funcs)
       end
 
-      if !block.nil?()
+      if !block.nil?
         type_observers << Observer.new(block,:call)
       end
     end
 
     def add_observers(*observers,type: :any,func: :call,&block)
-      if observers.empty?() && block.nil?()
+      if observers.empty? && block.nil?
         raise ArgumentError,'no observer'
       end
 
@@ -80,28 +79,28 @@ module SSCBot
 
       type_observers = fetch_observers(type: type)
 
-      observers.each() do |observer|
+      observers.each do |observer|
         type_observers << Observer.new(observer,func)
       end
 
-      if !block.nil?()
+      if !block.nil?
         type_observers << Observer.new(block,:call)
       end
     end
 
     def check_type(type,nil_ok: false)
-      if type.nil?()
+      if type.nil?
         if !nil_ok
-          raise ArgumentError,"invalid type{#{type.inspect()}}"
+          raise ArgumentError,"invalid type{#{type.inspect}}"
         end
       else
         if type != :any && !Message.valid_type?(type)
-          raise ArgumentError,"invalid type{#{type.inspect()}}"
+          raise ArgumentError,"invalid type{#{type.inspect}}"
         end
       end
     end
 
-    def clear_content()
+    def clear_content
       SSCFile.clear(@filename)
     end
 
@@ -110,14 +109,14 @@ module SSCBot
 
       count = 0
 
-      if type.nil?()
-        @observers.each_value() do |type_observers|
+      if type.nil?
+        @observers.each_value do |type_observers|
           count += type_observers.length
         end
       else
         type_observers = @observers[type]
 
-        if !type_observers.nil?()
+        if !type_observers.nil?
           count += type_observers.length
         end
       end
@@ -132,32 +131,24 @@ module SSCBot
     def delete_observers(*observers,type: nil)
       check_type(type,nil_ok: true)
 
-      if observers.empty?()
-        if type.nil?()
-          @observers.clear()
+      if observers.empty?
+        if type.nil?
+          @observers.clear
         else
-          type_observers = @observers[type]
-
-          if !type_observers.nil?()
-            type_observers.clear()
-          end
+          @observers[type]&.clear
         end
       else
-        observers = observers.to_set()
+        observers = observers.to_set
 
-        if type.nil?()
-          @observers.each_value() do |type_observers|
-            type_observers.delete_if() do |observer|
+        if type.nil?
+          @observers.each_value do |type_observers|
+            type_observers.delete_if do |observer|
               observers.include?(observer.object)
             end
           end
         else
-          type_observers = @observers[type]
-
-          if !type_observers.nil?()
-            type_observers.delete_if() do |observer|
-              observers.include?(observer.object)
-            end
+          @observers[type]&.delete_if do |observer|
+            observers.include?(observer.object)
           end
         end
       end
@@ -168,7 +159,7 @@ module SSCBot
 
       type_observers = @observers[type]
 
-      if type_observers.nil?()
+      if type_observers.nil?
         type_observers = []
         @observers[type] = type_observers
       end
@@ -180,37 +171,33 @@ module SSCBot
       any_observers = @observers[:any]
       type_observers = @observers[message.type]
 
-      if !any_observers.nil?()
-        any_observers.each() do |observer|
-          observer.notify(self,message)
-        end
+      any_observers&.each do |observer|
+        observer.notify(self,message)
       end
 
-      if !type_observers.nil?()
-        type_observers.each() do |observer|
-          observer.notify(self,message)
-        end
+      type_observers&.each do |observer|
+        observer.notify(self,message)
       end
     end
 
     def run(seek_to_end: true)
-      @semaphore.synchronize() do
+      @semaphore.synchronize do
         return if @alive # Already running
       end
 
-      stop() # Justin Case
+      stop # Justin Case
 
-      @semaphore.synchronize() do
+      @semaphore.synchronize do
         @alive = true
 
-        soft_touch() # Create the file if it doesn't exist
+        soft_touch # Create the file if it doesn't exist
 
-        @thread = Thread.new() do
+        @thread = Thread.new do
           SSCFile.open(@filename,@file_mode,**@file_opt) do |fin|
-            fin.seek_to_end() if seek_to_end
+            fin.seek_to_end if seek_to_end
 
             while @alive
-              while !(line = fin.get_line()).nil?()
+              while !(line = fin.read_uline).nil?
                 message = @parser.parse(line)
 
                 notify_observers(message)
@@ -223,21 +210,21 @@ module SSCBot
       end
     end
 
-    def soft_touch()
+    def soft_touch
       SSCFile.soft_touch(@filename)
     end
 
     def stop(wait_secs=5)
-      @semaphore.synchronize() do
+      @semaphore.synchronize do
         @alive = false
 
-        if !@thread.nil?()
-          if @thread.alive?()
+        if !@thread.nil?
+          if @thread.alive?
             # First, try to kill it gracefully (waiting X secs).
             @thread.join(@idle_secs + wait_secs)
 
             # Die!
-            @thread.kill() if @thread.alive?()
+            @thread.kill if @thread.alive?
           end
 
           @thread = nil
@@ -256,14 +243,14 @@ module SSCBot
       def initialize(object,*funcs)
         super()
 
-        raise ArgumentError,'empty funcs' if funcs.empty?()
+        raise ArgumentError,'empty funcs' if funcs.empty?
 
         @funcs = funcs
         @object = object
       end
 
       def notify(chat_log,message)
-        @funcs.each() do |func|
+        @funcs.each do |func|
           @object.__send__(func,chat_log,message)
         end
       end

@@ -1,4 +1,3 @@
-#!/usr/bin/env ruby
 # encoding: UTF-8
 # frozen_string_literal: true
 
@@ -31,7 +30,8 @@ java_import 'java.awt.datatransfer.StringSelection'
 
 java_import 'java.awt.event.KeyEvent'
 
-module SSCBot; module User
+module SSCBot
+module User
   ###
   # @author Jonathan Bradley Whited
   # @since  0.1.0
@@ -48,20 +48,21 @@ module SSCBot; module User
     attr_accessor :warn_user_key
     attr_accessor :warn_user_sleep
 
-    def initialize(auto_delay: 110,msg_key: nil,os: Util::OS,warn_user: false,warn_user_key: KeyEvent::VK_BACK_SPACE,warn_user_sleep: 0.747,**kargs)
+    def initialize(auto_delay: 110,msg_key: nil,os: Util::OS,warn_user: false,
+                   warn_user_key: KeyEvent::VK_BACK_SPACE,warn_user_sleep: 0.747,**kargs)
       super(**kargs)
 
-      @clipboard = Toolkit.getDefaultToolkit().getSystemClipboard()
+      @clipboard = Toolkit.getDefaultToolkit.getSystemClipboard
       @msg_key = msg_key
       @os = os
-      @robot = Robot.new()
+      @robot = Robot.new
       @warn_user = warn_user
       @warn_user_key = warn_user_key
       @warn_user_sleep = warn_user_sleep
 
       @robot.setAutoDelay(auto_delay)
 
-      @shortcut_paste = ->(ms) do
+      @shortcut_paste = lambda do |ms|
         if ms.os == :macos
           @shortcut_paste_macos.call(ms)
         else
@@ -72,7 +73,7 @@ module SSCBot; module User
       @shortcut_paste_macos = ->(ms) { ms.roll_keys(KeyEvent::VK_META,KeyEvent::VK_V) }
     end
 
-    def backspace()
+    def backspace
       return type_key(KeyEvent::VK_BACK_SPACE)
     end
 
@@ -82,12 +83,12 @@ module SSCBot; module User
       return self
     end
 
-    def enter()
+    def enter
       return type_key(KeyEvent::VK_ENTER)
     end
 
     def paste(str=nil)
-      copy(str) unless str.nil?()
+      copy(str) unless str.nil?
 
       @shortcut_paste.call(self)
 
@@ -95,7 +96,7 @@ module SSCBot; module User
     end
 
     def press_key(*key_codes)
-      key_codes.each() do |key_code|
+      key_codes.each do |key_code|
         @robot.keyPress(key_code)
       end
 
@@ -108,13 +109,13 @@ module SSCBot; module User
       # Could do type_msg_key().warn_user().type_msg_key(), but then if the
       #   client is in windowed mode and msg key is a tab, then a backspace
       #   from warn_user() will do nothing.
-      return warn_user().
-             type_msg_key().
+      return warn_user.
+             type_msg_key.
              paste(message)
     end
 
     def release_key(*key_codes)
-      key_codes.each() do |key_code|
+      key_codes.each do |key_code|
         @robot.keyRelease(key_code)
       end
 
@@ -122,7 +123,7 @@ module SSCBot; module User
     end
 
     def roll_keys(*key_codes)
-      key_codes.each() do |key_code|
+      key_codes.each do |key_code|
         @robot.keyPress(key_code)
       end
 
@@ -133,17 +134,18 @@ module SSCBot; module User
       return self
     end
 
-    def send_message()
-      enter()
+    def send_message
+      enter
     end
 
+    # TODO: implement type(message)
     def type(message)
       # TODO: implement type(message)
       super(message)
     end
 
     def type_key(*key_codes)
-      key_codes.each() do |key_code|
+      key_codes.each do |key_code|
         @robot.keyPress(key_code)
         @robot.keyRelease(key_code)
       end
@@ -151,7 +153,7 @@ module SSCBot; module User
       return self
     end
 
-    def type_msg_key()
+    def type_msg_key
       if @msg_key
         if @msg_key.respond_to?(:call)
           @msg_key.call(self)
@@ -163,7 +165,7 @@ module SSCBot; module User
       return self
     end
 
-    def warn_user()
+    def warn_user
       if @warn_user
         if @warn_user_key.respond_to?(:call)
           @warn_user_key.call(self)
@@ -177,4 +179,5 @@ module SSCBot; module User
       return self
     end
   end
-end; end
+end
+end

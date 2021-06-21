@@ -1,4 +1,3 @@
-#!/usr/bin/env ruby
 # encoding: UTF-8
 # frozen_string_literal: true
 
@@ -14,7 +13,8 @@ require 'attr_bool'
 
 require 'ssc.bot/chat_log/message'
 
-module SSCBot; class ChatLog
+module SSCBot
+class ChatLog
   ###
   # @author Jonathan Bradley Whited
   # @since  0.1.0
@@ -107,8 +107,9 @@ module SSCBot; class ChatLog
     attr_reader? :private
     attr_reader :zone
 
-    def initialize(line,find_type:,arena: nil,days: nil,hours: nil,more: false,player: nil,private: false,zone: nil)
-      super(line,type: %s{?find})
+    def initialize(line,find_type:,arena: nil,days: nil,hours: nil,more: false,player: nil,private: false,
+                   zone: nil)
+      super(line,type: %s(?find))
 
       @arena = arena
       @days = days
@@ -130,7 +131,7 @@ module SSCBot; class ChatLog
     attr_reader :log_type # [:open,:close]
 
     def initialize(line,log_type:,filename: nil)
-      super(line,type: %s{?log})
+      super(line,type: %s(?log))
 
       @filename = filename
       @log_type = log_type
@@ -145,7 +146,7 @@ module SSCBot; class ChatLog
     attr_reader :namelen
 
     def initialize(line,namelen:)
-      super(line,type: %s{?namelen})
+      super(line,type: %s(?namelen))
 
       @namelen = namelen
     end
@@ -176,4 +177,5 @@ module SSCBot; class ChatLog
       super(line,type: :team,name: name,message: message)
     end
   end
-end; end
+end
+end

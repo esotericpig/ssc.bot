@@ -1,4 +1,3 @@
-#!/usr/bin/env ruby
 # encoding: UTF-8
 # frozen_string_literal: true
 
@@ -14,7 +13,8 @@ require 'forwardable'
 
 require 'ssc.bot/chat_log/message_parser'
 
-module SSCBot; class ChatLog
+module SSCBot
+class ChatLog
   ###
   # @author Jonathan Bradley Whited
   # @since  0.1.0
@@ -26,12 +26,13 @@ module SSCBot; class ChatLog
 
     attr_reader :parser
 
-    (MessageParser.public_instance_methods - Class.public_instance_methods).each() do |method|
-      name = method.to_s()
+    (MessageParser.public_instance_methods - Class.public_instance_methods).each do |method|
+      name = method.to_s
 
       next if name.start_with?('match_') || name.start_with?('parse_')
 
       def_delegator(:@parser,method)
     end
   end
-end; end
+end
+end

@@ -1,4 +1,3 @@
-#!/usr/bin/env ruby
 # encoding: UTF-8
 # frozen_string_literal: true
 
@@ -19,7 +18,8 @@ require 'ssc.bot/util'
 require 'ssc.bot/chat_log/message'
 require 'ssc.bot/chat_log/messages'
 
-module SSCBot; class ChatLog
+module SSCBot
+class ChatLog
   ###
   # @author Jonathan Bradley Whited
   # @since  0.1.0
@@ -56,19 +56,19 @@ module SSCBot; class ChatLog
     #
     # @example Default Format
     #   'X Name> Message'
-    def match_player(line,type_name:,name_prefix: '',name_suffix: '> ',type_prefix: %r{..},use_namelen: true)
+    def match_player(line,type_name:,name_prefix: '',name_suffix: '> ',type_prefix: /../,use_namelen: true)
       cached_regex = @regex_cache[type_name]
 
-      if cached_regex.nil?()
+      if cached_regex.nil?
         cached_regex = {}
         @regex_cache[type_name] = cached_regex
       end
 
-      use_namelen &&= !@namelen.nil?()
+      use_namelen &&= !@namelen.nil?
       key = use_namelen ? @namelen : :no_namelen
       regex = cached_regex[key]
 
-      if regex.nil?()
+      if regex.nil?
         name_prefix = Util.quote_str_or_regex(name_prefix)
         name_suffix = Util.quote_str_or_regex(name_suffix)
         type_prefix = Util.quote_str_or_regex(type_prefix)
@@ -96,9 +96,9 @@ module SSCBot; class ChatLog
     end
 
     def parse(line)
-      if line.nil?()
+      if line.nil?
         if @strict
-          raise ArgumentError,"invalid line{#{line.inspect()}}"
+          raise ArgumentError,"invalid line{#{line.inspect}}"
         else
           line = ''
         end
@@ -106,7 +106,7 @@ module SSCBot; class ChatLog
 
       message = nil
 
-      if !line.empty?()
+      if !line.empty?
         case line[0]
         when 'C'
           message = parse_chat(line)
@@ -141,7 +141,7 @@ module SSCBot; class ChatLog
         end
       end
 
-      if message.nil?()
+      if message.nil?
         message = Message.new(line,type: :unknown)
       end
 
@@ -156,12 +156,12 @@ module SSCBot; class ChatLog
     #   # NOT affected by namelen.
     #   'C 1:Name> Message'
     def parse_chat(line)
-      match = match_player(line,type_name: :chat,name_prefix: %r{(?<channel>\d+)\:},use_namelen: false)
+      match = match_player(line,type_name: :chat,name_prefix: /(?<channel>\d+)\:/,use_namelen: false)
       player = parse_player(line,type_name: :chat,match: match)
 
-      return nil if player.nil?()
+      return nil if player.nil?
 
-      channel = match[:channel].to_i()
+      channel = match[:channel].to_i
 
       return ChatMessage.new(line,channel: channel,name: player.name,message: player.message)
     end
@@ -171,7 +171,7 @@ module SSCBot; class ChatLog
     def parse_freq(line)
       player = parse_player(line,type_name: :freq)
 
-      return nil if player.nil?()
+      return nil if player.nil?
 
       return FreqMessage.new(line,name: player.name,message: player.message)
     end
@@ -179,7 +179,7 @@ module SSCBot; class ChatLog
     # @example Format
     #   '  Killed.Name(100) killed by: Killer.Name'
     def parse_kill(line,match:)
-      if match.nil?()
+      if match.nil?
         if @strict
           raise ParseError,"invalid kill message{#{line}}"
         else
@@ -188,7 +188,7 @@ module SSCBot; class ChatLog
       end
 
       killed = match[:killed]
-      bounty = match[:bounty].to_i()
+      bounty = match[:bounty].to_i
       killer = match[:killer]
 
       return KillMessage.new(line,killed: killed,bounty: bounty,killer: killer)
@@ -197,7 +197,7 @@ module SSCBot; class ChatLog
     # @example Default Format
     #   'X Name> Message'
     def parse_player(line,type_name:,match: :default)
-      if match.nil?()
+      if match.nil?
         if @strict
           raise ParseError,"invalid #{type_name} message{#{line}}"
         else
@@ -211,7 +211,7 @@ module SSCBot; class ChatLog
       name = Util.u_lstrip(match[:name])
       message = match[:message]
 
-      if name.empty?() || name.length > MAX_NAMELEN
+      if name.empty? || name.length > MAX_NAMELEN
         if @strict
           raise ParseError,"invalid player name for #{type_name} message{#{line}}"
         else
@@ -227,7 +227,7 @@ module SSCBot; class ChatLog
     def parse_private(line)
       player = parse_player(line,type_name: :private)
 
-      return nil if player.nil?()
+      return nil if player.nil?
 
       return PrivateMessage.new(line,name: player.name,message: player.message)
     end
@@ -237,12 +237,12 @@ module SSCBot; class ChatLog
     def parse_pub(line,match:)
       player = parse_player(line,type_name: :pub,match: match)
 
-      return nil if player.nil?()
+      return nil if player.nil?
 
-      cmd = Util.u_strip(player.message).downcase()
+      cmd = Util.u_strip(player.message).downcase
 
       if cmd.start_with?('?find')
-        store_command(:pub,%s{?find}) # See: match_q_find?()
+        store_command(:pub,%s(?find)) # See: match_q_find?()
       end
 
       return PubMessage.new(line,name: player.name,message: player.message)
@@ -258,7 +258,7 @@ module SSCBot; class ChatLog
     #   '  Name is in SSCJ Devastation'
     #   '  Name is in SSCC Metal Gear CTF'
     def parse_q_find(line,match:)
-      if match.nil?()
+      if match.nil?
         if @strict
           raise ParseError,"invalid ?find message{#{line}}"
         else
@@ -271,11 +271,11 @@ module SSCBot; class ChatLog
 
       if (days = caps['days'])
         more = caps.key?('more')
-        days = days.to_i()
+        days = days.to_i
 
         q_find = QFindMessage.new(line,find_type: :days,more: more,days: days)
       elsif (hours = caps['hours'])
-        hours = hours.to_i()
+        hours = hours.to_i
 
         q_find = QFindMessage.new(line,find_type: :hours,hours: hours)
       elsif (player = caps['player'])
@@ -288,7 +288,7 @@ module SSCBot; class ChatLog
         end
       end
 
-      if q_find.nil?() && @strict
+      if q_find.nil? && @strict
         raise ParseError,"invalid ?find message{#{line}}"
       end
 
@@ -299,7 +299,7 @@ module SSCBot; class ChatLog
     #   '  Log file open: session.log'
     #   '  Log file closed'
     def parse_q_log(line,match:)
-      if match.nil?()
+      if match.nil?
         if @strict
           raise ParseError,"invalid ?log message{#{line}}"
         else
@@ -308,7 +308,7 @@ module SSCBot; class ChatLog
       end
 
       filename = match.named_captures['filename']
-      log_type = filename.nil?() ? :close : :open
+      log_type = filename.nil? ? :close : :open
 
       return QLogMessage.new(line,log_type: log_type,filename: filename)
     end
@@ -316,7 +316,7 @@ module SSCBot; class ChatLog
     # @example Format
     #   '  Message Name Length: 24'
     def parse_q_namelen(line,match:)
-      if match.nil?()
+      if match.nil?
         if @strict
           raise ParseError,"invalid ?namelen message{#{line}}"
         else
@@ -324,7 +324,7 @@ module SSCBot; class ChatLog
         end
       end
 
-      namelen = match[:namelen].to_i()
+      namelen = match[:namelen].to_i
 
       if namelen < 1
         if @strict
@@ -348,9 +348,9 @@ module SSCBot; class ChatLog
     #   'P :Self.Name:Message'
     #   'P (Name)>Message'
     def parse_remote(line,match:)
-      player = parse_player(line,type_name: %s{remote.private},match: match)
+      player = parse_player(line,type_name: %s(remote.private),match: match)
 
-      return nil if player.nil?()
+      return nil if player.nil?
 
       own = (line[2] == ':')
       squad = (player.name[0] == '#')
@@ -366,23 +366,23 @@ module SSCBot; class ChatLog
     def parse_team(line)
       player = parse_player(line,type_name: :team)
 
-      return nil if player.nil?()
+      return nil if player.nil?
 
       return TeamMessage.new(line,name: player.name,message: player.message)
     end
 
-    def clear_history()
-      @messages.clear()
+    def clear_history
+      @messages.clear
     end
 
-    def reset_namelen()
+    def reset_namelen
       @namelen = nil
     end
 
     def store_command(type,name)
       type_hash = @commands[type]
 
-      if type_hash.nil?()
+      if type_hash.nil?
         type_hash = {}
         @commands[type] = type_hash
       end
@@ -395,10 +395,10 @@ module SSCBot; class ChatLog
 
       type_hash = @commands[type]
 
-      if !type_hash.nil?()
+      if !type_hash.nil?
         index = type_hash[name]
 
-        if !index.nil?() && (@messages.length - index) <= @check_history_count
+        if !index.nil? && (@messages.length - index) <= @check_history_count
           type_hash.delete(name) if delete
 
           return true
@@ -423,10 +423,10 @@ module SSCBot; class ChatLog
 
       match = match_player(line,type_name: :pub,type_prefix: '  ')
 
-      if !match.nil?()
+      if !match.nil?
         name = Util.u_lstrip(match[:name])
 
-        if name.empty?() || name.length > MAX_NAMELEN
+        if name.empty? || name.length > MAX_NAMELEN
           return false
         end
       end
@@ -445,17 +445,17 @@ module SSCBot; class ChatLog
     #   '  Name is in SSCC Metal Gear CTF'
     def match_q_find?(line)
       return false if line.length < 7 # '  N - A'
-      return false unless command?(:pub,%s{?find})
+      return false unless command?(:pub,%s(?find))
 
       if line.start_with?('  Not online, last seen ')
         match = line.match(/(?<more>more) than (?<days>\d+) days ago\z/)
-        match = line.match(/(?<days>\d+) days? ago\z/) if match.nil?()
-        match = line.match(/(?<hours>\d+) hours? ago\z/) if match.nil?()
+        match = line.match(/(?<days>\d+) days? ago\z/) if match.nil?
+        match = line.match(/(?<hours>\d+) hours? ago\z/) if match.nil?
 
         return match
       else
         match = line.match(/\A  (?<player>.+) is in (?<zone>.+)\z/)
-        match = line.match(/\A  (?<player>.+) - (?<arena>.+)\z/) if match.nil?()
+        match = line.match(/\A  (?<player>.+) - (?<arena>.+)\z/) if match.nil?
 
         if match
           caps = match.named_captures
@@ -474,7 +474,7 @@ module SSCBot; class ChatLog
 
           # If do /\A  (?<player>[^[[:space:]]].+[^[[:space:]])/, then it won't
           #   capture names/zones/arenas that are only 1 char long, so do this.
-          [player[0],player[-1],area[0],area[-1]].each() do |c|
+          [player[0],player[-1],area[0],area[-1]].each do |c|
             if c =~ /[[:space:]]/
               return false
             end
@@ -494,7 +494,7 @@ module SSCBot; class ChatLog
       return false if line.length < 17
 
       match = /\A  Log file open: (?<filename>.+)\z/.match(line)
-      match = /\A  Log file closed\z/.match(line) if match.nil?()
+      match = /\A  Log file closed\z/.match(line) if match.nil?
 
       return match
     end
@@ -517,14 +517,15 @@ module SSCBot; class ChatLog
 
       case line[2]
       when ':'
-        return match_player(line,type_name: %s{remote.out},
+        return match_player(line,type_name: %s(remote.out),
           name_prefix: ':',name_suffix: ':',use_namelen: false)
       when '('
-        return match_player(line,type_name: %s{remote.in},
+        return match_player(line,type_name: %s(remote.in),
           name_prefix: '(',name_suffix: ')>',use_namelen: false)
       end
 
       return false
     end
   end
-end; end
+end
+end

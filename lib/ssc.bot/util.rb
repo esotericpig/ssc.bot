@@ -1,4 +1,3 @@
-#!/usr/bin/env ruby
 # encoding: UTF-8
 # frozen_string_literal: true
 
@@ -41,7 +40,7 @@ module SSCBot
 
       return os
     end
-    OS = os()
+    OS = os
 
     def self.quote_str_or_regex(value)
       if value.respond_to?(:source)
@@ -51,7 +50,7 @@ module SSCBot
       end
     end
 
-    def self.ruby_engine()
+    def self.ruby_engine
       engines = [
         defined?(::RUBY_ENGINE) ? ::RUBY_ENGINE : nil,
         RbConfig::CONFIG['ruby_install_name'],
@@ -59,7 +58,7 @@ module SSCBot
         RbConfig::CONFIG['RUBY_INSTALL_NAME'],
         RbConfig::CONFIG['RUBYW_INSTALL_NAME'],
         RbConfig.ruby,
-      ].join('|').downcase()
+      ].join('|').downcase
 
       if engines.include?('jruby')
         return :jruby
@@ -69,28 +68,28 @@ module SSCBot
 
       return :ruby
     end
-    RUBY_ENGINE = ruby_engine()
+    RUBY_ENGINE = ruby_engine
 
     # Universally, is +str+ empty after stripping or +nil+?
     def self.u_blank?(str)
-      return str.nil?() || str.empty?() || u_strip(str).empty?()
+      return str.nil? || str.empty? || u_strip(str).empty?
     end
 
     # Universally, left strip +str+'s leading (head) space.
     def self.u_lstrip(str)
-      return nil if str.nil?()
+      return nil if str.nil?
       return str.gsub(/\A[[:space:]]+/,'')
     end
 
     # Universally, right strip +str+'s trailing (tail) space.
     def self.u_rstrip(str)
-      return nil if str.nil?()
+      return nil if str.nil?
       return str.gsub(/[[:space:]]+\z/,'')
     end
 
     # Universally, strip +str+'s space.
     def self.u_strip(str)
-      return nil if str.nil?()
+      return nil if str.nil?
       return str.gsub(/\A[[:space:]]+|[[:space:]]+\z/,'')
     end
   end

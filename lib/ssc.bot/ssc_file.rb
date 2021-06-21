@@ -1,4 +1,3 @@
-#!/usr/bin/env ruby
 # encoding: UTF-8
 # frozen_string_literal: true
 
@@ -21,7 +20,7 @@ module SSCBot
     DEFAULT_BUFFER_LEN = 520
     DEFAULT_ENCODING = 'Windows-1252:UTF-8'
     DEFAULT_MODE = 'rt'
-    DEFAULT_SEPARATOR = /\r?\n|\r/ # Instead, could use +/\R/+ for Ruby v2.0+
+    DEFAULT_SEPARATOR = /\r?\n|\r/.freeze # Instead, could use +/\R/+ for Ruby v2.0+.
 
     # Clear (truncate) the contents of +filename+.
     #
@@ -30,12 +29,12 @@ module SSCBot
     def self.clear_content(filename,strip: true,textmode: true,**opt)
       filename = Util.u_strip(filename) if strip
 
-      return if filename.empty?()
-      return if !File.file?(filename) # Also checks if exists
+      return if filename.empty?
+      return unless File.file?(filename) # Also checks if exists.
 
       # Clear the file.
       # - Do NOT call truncate() as it's not available on all platforms.
-      open(filename,'w',textmode: textmode,**opt) do |file|
+      self.open(filename,'w',textmode: textmode,**opt) do |file|
       end
     end
 
@@ -49,15 +48,16 @@ module SSCBot
     def self.soft_touch(filename,strip: true,textmode: true,**opt)
       filename = Util.u_strip(filename) if strip
 
-      return if filename.empty?()
+      return if filename.empty?
       return if File.exist?(filename)
 
       # Create the file.
-      open(filename,'a',textmode: textmode,**opt) do |file|
+      self.open(filename,'a',textmode: textmode,**opt) do |file|
       end
     end
 
-    def initialize(filename,mode=DEFAULT_MODE,buffer_len: DEFAULT_BUFFER_LEN,encoding: DEFAULT_ENCODING,separator: DEFAULT_SEPARATOR,**opt)
+    def initialize(filename,mode=DEFAULT_MODE,buffer_len: DEFAULT_BUFFER_LEN,encoding: DEFAULT_ENCODING,
+                   separator: DEFAULT_SEPARATOR,**opt)
       super(filename,mode,encoding: encoding,**opt)
 
       @sscbot_buffer = nil
@@ -65,13 +65,14 @@ module SSCBot
       @sscbot_separator = separator
     end
 
-    def get_line()
-      if @sscbot_buffer.nil?()
+    # Read a universal line.
+    def read_uline
+      if @sscbot_buffer.nil?
         # See comment at loop below.
         # - Use gets() instead of eof?() because of this method's name.
         line = gets(nil,@sscbot_buffer_len)
 
-        return nil if line.nil?() # Still EOF?
+        return nil if line.nil? # Still EOF?
 
         @sscbot_buffer = line
       end
@@ -88,7 +89,7 @@ module SSCBot
       # - Use a separator of nil to get all of the different types of newlines.
       # - Use gets() [instead of read(), etc.] to work probably with text (e.g., UTF-8)
       #   and to not throw an error at EOF (returns nil).
-      while !(line = gets(nil,@sscbot_buffer_len)).nil?()
+      while !(line = gets(nil,@sscbot_buffer_len)).nil?
         lines = line.split(@sscbot_separator,2)
 
         # Will only have 2 if there was a separator.
@@ -109,10 +110,10 @@ module SSCBot
       return line
     end
 
-    def seek_to_end()
+    def seek_to_end
       result = seek(0,:END)
 
-      get_line() # Justin Case
+      read_uline # Justin Case
 
       return result
     end
