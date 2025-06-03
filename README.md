@@ -74,7 +74,7 @@ $ bundle exec rake install:local
 [GNU LGPL v3+](LICENSE.txt)
 
 > SSC.Bot (<https://github.com/esotericpig/ssc.bot>)  
-> Copyright (c) 2020-2021 Jonathan Bradley Whited  
+> Copyright (c) 2020-2021 Bradley Whited  
 > 
 > SSC.Bot is free software: you can redistribute it and/or modify  
 > it under the terms of the GNU Lesser General Public License as published by  

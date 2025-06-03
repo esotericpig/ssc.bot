@@ -3,7 +3,7 @@
 
 #--
 # This file is part of SSC.Bot.
-# Copyright (c) 2020-2021 Jonathan Bradley Whited
+# Copyright (c) 2020-2021 Bradley Whited
 #
 # SPDX-License-Identifier: LGPL-3.0-or-later
 #++
@@ -18,7 +18,7 @@ require 'ssc.bot/chat_log/messages'
 
 module SSCBot
   ###
-  # @author Jonathan Bradley Whited
+  # @author Bradley Whited
   # @since  0.1.0
   ###
   class ChatLogFile < SSCFile

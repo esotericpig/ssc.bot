@@ -7,7 +7,7 @@ require_relative 'lib/ssc.bot/version'
 Gem::Specification.new do |spec|
   spec.name        = 'ssc.bot'
   spec.version     = SSCBot::VERSION
-  spec.authors     = ['Jonathan Bradley Whited']
+  spec.authors     = ['Bradley Whited']
   spec.email       = ['code@esotericpig.com']
   spec.licenses    = ['LGPL-3.0-or-later']
   spec.homepage    = 'https://github.com/esotericpig/ssc.bot'

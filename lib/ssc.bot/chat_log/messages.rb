@@ -3,7 +3,7 @@
 
 #--
 # This file is part of SSC.Bot.
-# Copyright (c) 2020-2021 Jonathan Bradley Whited
+# Copyright (c) 2020-2021 Bradley Whited
 #
 # SPDX-License-Identifier: LGPL-3.0-or-later
 #++
@@ -16,7 +16,7 @@ require 'ssc.bot/chat_log/message'
 module SSCBot
 class ChatLog
   ###
-  # @author Jonathan Bradley Whited
+  # @author Bradley Whited
   # @since  0.1.0
   ###
   class PlayerMessage < Message
@@ -32,7 +32,7 @@ class ChatLog
   end
 
   ###
-  # @author Jonathan Bradley Whited
+  # @author Bradley Whited
   # @since  0.1.0
   ###
   class ChatMessage < PlayerMessage
@@ -46,7 +46,7 @@ class ChatLog
   end
 
   ###
-  # @author Jonathan Bradley Whited
+  # @author Bradley Whited
   # @since  0.1.0
   ###
   class FreqMessage < PlayerMessage
@@ -56,7 +56,7 @@ class ChatLog
   end
 
   ###
-  # @author Jonathan Bradley Whited
+  # @author Bradley Whited
   # @since  0.1.0
   ###
   class KillMessage < Message
@@ -74,7 +74,7 @@ class ChatLog
   end
 
   ###
-  # @author Jonathan Bradley Whited
+  # @author Bradley Whited
   # @since  0.1.0
   ###
   class PrivateMessage < PlayerMessage
@@ -84,7 +84,7 @@ class ChatLog
   end
 
   ###
-  # @author Jonathan Bradley Whited
+  # @author Bradley Whited
   # @since  0.1.0
   ###
   class PubMessage < PlayerMessage
@@ -94,7 +94,7 @@ class ChatLog
   end
 
   ###
-  # @author Jonathan Bradley Whited
+  # @author Bradley Whited
   # @since  0.1.0
   ###
   class QFindMessage < Message
@@ -123,7 +123,7 @@ class ChatLog
   end
 
   ###
-  # @author Jonathan Bradley Whited
+  # @author Bradley Whited
   # @since  0.1.0
   ###
   class QLogMessage < Message
@@ -139,7 +139,7 @@ class ChatLog
   end
 
   ###
-  # @author Jonathan Bradley Whited
+  # @author Bradley Whited
   # @since  0.1.0
   ###
   class QNamelenMessage < Message
@@ -153,7 +153,7 @@ class ChatLog
   end
 
   ###
-  # @author Jonathan Bradley Whited
+  # @author Bradley Whited
   # @since  0.1.0
   ###
   class RemoteMessage < PrivateMessage
@@ -169,7 +169,7 @@ class ChatLog
   end
 
   ###
-  # @author Jonathan Bradley Whited
+  # @author Bradley Whited
   # @since  0.1.0
   ###
   class TeamMessage < PlayerMessage
