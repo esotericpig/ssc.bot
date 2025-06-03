@@ -8,7 +8,6 @@
 # SPDX-License-Identifier: LGPL-3.0-or-later
 #++
 
-
 require 'attr_bool'
 require 'set'
 
@@ -73,12 +72,7 @@ class ChatLog
         name_suffix = Util.quote_str_or_regex(name_suffix)
         type_prefix = Util.quote_str_or_regex(type_prefix)
 
-        if use_namelen
-          name = /.{#{@namelen}}/
-        else
-          name = /.*?\S/
-        end
-
+        name = use_namelen ? /.{#{@namelen}}/ : /.*?\S/
         name = Util.quote_str_or_regex(name)
 
         # Be careful to not use spaces ' ', but to use '\\ ' (or '\s') instead
@@ -113,11 +107,12 @@ class ChatLog
         when 'E'
           message = parse_freq(line)
         when 'P'
-          if (match = match_remote?(line))
-            message = parse_remote(line,match: match)
-          else
-            message = parse_private(line)
-          end
+          message =
+            if (match = match_remote?(line))
+              parse_remote(line,match: match)
+            else
+              parse_private(line)
+            end
         when 'T'
           message = parse_team(line)
         else
@@ -156,7 +151,7 @@ class ChatLog
     #   # NOT affected by namelen.
     #   'C 1:Name> Message'
     def parse_chat(line)
-      match = match_player(line,type_name: :chat,name_prefix: /(?<channel>\d+)\:/,use_namelen: false)
+      match = match_player(line,type_name: :chat,name_prefix: /(?<channel>\d+):/,use_namelen: false)
       player = parse_player(line,type_name: :chat,match: match)
 
       return nil if player.nil?
@@ -355,7 +350,8 @@ class ChatLog
       own = (line[2] == ':')
       squad = (player.name[0] == '#')
 
-      return RemoteMessage.new(line,
+      return RemoteMessage.new(
+        line,
         own: own,squad: squad,
         name: player.name,message: player.message,
       )
@@ -387,7 +383,8 @@ class ChatLog
         @commands[type] = type_hash
       end
 
-      type_hash[name] = @messages.length # Index of when command was found/stored
+      # Index of when command was found/stored
+      type_hash[name] = @messages.length # rubocop:disable Lint/UselessSetterCall
     end
 
     def command?(type,name,delete: true)
@@ -475,7 +472,7 @@ class ChatLog
           # If do /\A  (?<player>[^[[:space:]]].+[^[[:space:]])/, then it won't
           #   capture names/zones/arenas that are only 1 char long, so do this.
           [player[0],player[-1],area[0],area[-1]].each do |c|
-            if c =~ /[[:space:]]/
+            if /[[:space:]]/.match?(c)
               return false
             end
           end
@@ -517,11 +514,13 @@ class ChatLog
 
       case line[2]
       when ':'
-        return match_player(line,type_name: %s(remote.out),
-          name_prefix: ':',name_suffix: ':',use_namelen: false)
+        return match_player(
+          line,type_name: %s(remote.out),name_prefix: ':',name_suffix: ':',use_namelen: false
+        )
       when '('
-        return match_player(line,type_name: %s(remote.in),
-          name_prefix: '(',name_suffix: ')>',use_namelen: false)
+        return match_player(
+          line,type_name: %s(remote.in),name_prefix: '(',name_suffix: ')>',use_namelen: false
+        )
       end
 
       return false

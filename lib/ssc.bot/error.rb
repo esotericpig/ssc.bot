@@ -8,7 +8,6 @@
 # SPDX-License-Identifier: LGPL-3.0-or-later
 #++
 
-
 module SSCBot
   ###
   # @author Bradley Whited
@@ -21,12 +20,12 @@ module SSCBot
   # @since  0.1.0
   ###
   class AbstractMethodError < Error
-    def initialize(msg=nil)
+    def initialize(msg = nil)
       if msg.is_a?(Symbol)
         msg = "abstract method not implemented: #{msg}(...)"
       end
 
-      super(msg)
+      super
     end
   end
 

@@ -1,7 +1,6 @@
 # encoding: UTF-8
 # frozen_string_literal: true
 
-
 require 'bundler/gem_tasks'
 
 require 'yard'
@@ -17,8 +16,7 @@ CLOBBER.include('doc/')
 task default: [:test]
 
 desc 'Generate documentation'
-task doc: [:yard] do |task|
-end
+task doc: [:yard]
 
 Rake::TestTask.new do |task|
   task.libs = ['lib','test']
@@ -30,6 +28,6 @@ Rake::TestTask.new do |task|
 end
 
 YARD::Rake::YardocTask.new do |task|
-  #task.options.push('--template-path',File.join('yard','templates'))
+  # task.options.push('--template-path',File.join('yard','templates'))
   task.options.push('--title',"SSC.Bot v#{SSCBot::VERSION} Doc")
 end

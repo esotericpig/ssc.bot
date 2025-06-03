@@ -8,7 +8,6 @@
 # SPDX-License-Identifier: LGPL-3.0-or-later
 #++
 
-
 module SSCBot
   VERSION = '0.2.0'
 end

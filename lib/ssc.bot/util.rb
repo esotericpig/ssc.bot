@@ -8,7 +8,6 @@
 # SPDX-License-Identifier: LGPL-3.0-or-later
 #++
 
-
 require 'rbconfig'
 
 module SSCBot
@@ -20,7 +19,7 @@ module SSCBot
   # @since  0.1.0
   ###
   module Util
-    def self.os(host_os=RbConfig::CONFIG['host_os'])
+    def self.os(host_os = RbConfig::CONFIG['host_os'])
       os = :unknown
 
       case host_os

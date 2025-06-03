@@ -8,7 +8,6 @@
 # SPDX-License-Identifier: LGPL-3.0-or-later
 #++
 
-
 require 'ssc.bot/util'
 
 module SSCBot
@@ -32,9 +31,9 @@ module SSCBot
       return if filename.empty?
       return unless File.file?(filename) # Also checks if exists.
 
-      # Clear the file.
       # - Do NOT call truncate() as it's not available on all platforms.
       self.open(filename,'w',textmode: textmode,**opt) do |file|
+        # Clear the file.
       end
     end
 
@@ -51,12 +50,12 @@ module SSCBot
       return if filename.empty?
       return if File.exist?(filename)
 
-      # Create the file.
       self.open(filename,'a',textmode: textmode,**opt) do |file|
+        # Create the file.
       end
     end
 
-    def initialize(filename,mode=DEFAULT_MODE,buffer_len: DEFAULT_BUFFER_LEN,encoding: DEFAULT_ENCODING,
+    def initialize(filename,mode = DEFAULT_MODE,buffer_len: DEFAULT_BUFFER_LEN,encoding: DEFAULT_ENCODING,
                    separator: DEFAULT_SEPARATOR,**opt)
       super(filename,mode,encoding: encoding,**opt)
 

@@ -8,7 +8,6 @@
 # SPDX-License-Identifier: LGPL-3.0-or-later
 #++
 
-
 begin
   require 'java'
 rescue LoadError => e
@@ -87,7 +86,7 @@ module User
       return type_key(KeyEvent::VK_ENTER)
     end
 
-    def paste(str=nil)
+    def paste(str = nil)
       copy(str) unless str.nil?
 
       @shortcut_paste.call(self)
@@ -109,9 +108,7 @@ module User
       # Could do type_msg_key().warn_user().type_msg_key(), but then if the
       #   client is in windowed mode and msg key is a tab, then a backspace
       #   from warn_user() will do nothing.
-      return warn_user.
-             type_msg_key.
-             paste(message)
+      return warn_user.type_msg_key.paste(message)
     end
 
     def release_key(*key_codes)
@@ -139,9 +136,8 @@ module User
     end
 
     # TODO: implement type(message)
-    def type(message)
-      # TODO: implement type(message)
-      super(message)
+    def type(message) # rubocop:disable Lint/UselessMethodDefinition
+      super
     end
 
     def type_key(*key_codes)

@@ -8,7 +8,6 @@
 # SPDX-License-Identifier: LGPL-3.0-or-later
 #++
 
-
 require 'ssc.bot/ssc_file'
 
 require 'ssc.bot/chat_log/message'
@@ -24,7 +23,7 @@ module SSCBot
   class ChatLogFile < SSCFile
     include ChatLog::MessageParsable
 
-    def initialize(filename,mode=DEFAULT_MODE,parser: ChatLog::MessageParser.new,**file_kargs)
+    def initialize(filename,mode = DEFAULT_MODE,parser: ChatLog::MessageParser.new,**file_kargs)
       super(filename,mode,**file_kargs)
 
       @parser = parser

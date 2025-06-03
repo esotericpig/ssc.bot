@@ -8,7 +8,6 @@
 # SPDX-License-Identifier: LGPL-3.0-or-later
 #++
 
-
 require 'ssc.bot/user/message_sender'
 
 module SSCBot

@@ -8,7 +8,6 @@
 # SPDX-License-Identifier: LGPL-3.0-or-later
 #++
 
-
 require 'ssc.bot/chat_log'
 require 'ssc.bot/chat_log_file'
 require 'ssc.bot/clu'

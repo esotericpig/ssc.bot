@@ -8,7 +8,6 @@
 # SPDX-License-Identifier: LGPL-3.0-or-later
 #++
 
-
 require 'attr_bool'
 require 'time'
 
@@ -67,7 +66,7 @@ module User
     attr_reader :message_time
     attr_accessor? :staff
 
-    def put(message)
+    def put(_message)
       raise AbstractMethodError,__method__
     end
 
@@ -75,7 +74,7 @@ module User
       raise AbstractMethodError,__method__
     end
 
-    def type(message)
+    def type(_message)
       raise AbstractMethodError,__method__
     end
 
@@ -120,7 +119,7 @@ module User
           when '/',"'",'"',';','='
             escape = true
           when '?'
-            if stripped_message[1] =~ /[[:alpha:]]/
+            if /[[:alpha:]]/.match?(stripped_message[1])
               escape = true
             end
           when '*','-'
@@ -199,7 +198,7 @@ module User
     end
 
     def send_freq(message)
-      send_safe(%Q("#{message}))
+      send_safe(%("#{message}))
     end
 
     def send_freq_eq(freq)
@@ -214,7 +213,7 @@ module User
       send_safe(":#{name}:#{message}")
     end
 
-    def send_private_to_last(message,last=1)
+    def send_private_to_last(message,last = 1)
       put_or_type('::')
 
       while (last -= 1) > 0

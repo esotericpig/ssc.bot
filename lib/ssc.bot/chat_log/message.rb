@@ -8,7 +8,6 @@
 # SPDX-License-Identifier: LGPL-3.0-or-later
 #++
 
-
 require 'attr_bool'
 require 'set'
 
@@ -50,13 +49,18 @@ class ChatLog
     # In order of F1 Help box.
     %i[
       pub team private remote freq chat
+
       ?lines ?namelen ?ignore ?nopubchat ?obscene ?away ?log ?logbuffer
-        ?kill kill ?enter enter ?leave leave ?message ?messages ?chat
+      ?kill kill ?enter enter ?leave leave ?message ?messages ?chat
+
       ?status ?scorereset ?team ?spec ?target ?time ?flags ?score ?crown
-        ?best ?buy
+      ?best ?buy
+
       ?owner ?password ?usage ?userid ?find ?ping ?packetloss ?lag ?music
-        ?sound ?alarm ?sheep ?getnews
+      ?sound ?alarm ?sheep ?getnews
+
       ?squadowner ?squad ?squadlist ?loadmacro ?savemacro
+
       unknown
     ].each do |type|
       add_type(type)

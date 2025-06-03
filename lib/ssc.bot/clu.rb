@@ -8,7 +8,6 @@
 # SPDX-License-Identifier: LGPL-3.0-or-later
 #++
 
-
 require 'forwardable'
 
 require 'ssc.bot/chat_log'

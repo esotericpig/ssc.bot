@@ -8,7 +8,6 @@
 # SPDX-License-Identifier: LGPL-3.0-or-later
 #++
 
-
 require 'attr_bool'
 require 'set'
 
@@ -50,7 +49,7 @@ module SSCBot
       @thread = nil
     end
 
-    def add_observer(observer=nil,*funcs,type: :any,&block)
+    def add_observer(observer = nil,*funcs,type: :any,&block)
       if observer.nil? && block.nil?
         raise ArgumentError,'no observer'
       end
@@ -214,7 +213,7 @@ module SSCBot
       SSCFile.soft_touch(@filename)
     end
 
-    def stop(wait_secs=5)
+    def stop(wait_secs = 5)
       @semaphore.synchronize do
         @alive = false
 

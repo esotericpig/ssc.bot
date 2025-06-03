@@ -8,7 +8,6 @@
 # SPDX-License-Identifier: LGPL-3.0-or-later
 #++
 
-
 require 'test_helper'
 
 require 'ssc.bot/util'
@@ -19,11 +18,11 @@ describe SSCBot::Util do
   let(:spaces) { "  \r\n\t  " }
   let(:spaces_x) { "#{spaces}x#{spaces}" }
 
-  before do
-  end
+  # before do
+  # end
 
-  after do
-  end
+  # after do
+  # end
 
   describe '.os()' do
     it 'should match the constant' do
